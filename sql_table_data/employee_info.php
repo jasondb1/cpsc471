@@ -1,0 +1,36 @@
+/* Table structure for table `employee_info` */
+DROP TABLE IF EXISTS `employee_info`;
+
+CREATE TABLE `employee_info` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` varchar(35) DEFAULT NULL,
+  `start_date` date DEFAULT NULL,
+  `ft_pt` varchar(10) DEFAULT NULL,
+  `hourly_salary` varchar(10) DEFAULT NULL,
+  `compensation` float DEFAULT NULL,
+  `position` varchar(35) DEFAULT NULL,
+  `division` varchar(35) DEFAULT NULL,
+  `pay_increase_date` date DEFAULT NULL,
+  `sin` int(11) DEFAULT NULL,
+  `dob` date DEFAULT NULL,
+  `td1` float DEFAULT NULL,
+  `td1ab` float DEFAULT NULL,
+  `home_phone` varchar(25) DEFAULT NULL,
+  `home_cell` varchar(25) DEFAULT NULL,
+  `home_email` varchar(40) DEFAULT NULL,
+  `street` varchar(35) DEFAULT NULL,
+  `city` varchar(25) DEFAULT NULL,
+  `province` varchar(25) DEFAULT NULL,
+  `postal_code` varchar(16) DEFAULT NULL,
+  `work_email` varchar(40) DEFAULT NULL,
+  `work_phone` varchar(25) DEFAULT NULL,
+  `work_cell` varchar(25) DEFAULT NULL,
+  `drivers_license` varchar(25) DEFAULT NULL,
+  `expiry` date DEFAULT NULL,
+  `emergency_contact` varchar(35) DEFAULT NULL,
+  `emerg_number` varchar(25) DEFAULT NULL,
+  `notes` text,
+  `status` varchar(25) DEFAULT NULL,
+  `supervisor` varchar(35) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=53 DEFAULT CHARSET=latin1;

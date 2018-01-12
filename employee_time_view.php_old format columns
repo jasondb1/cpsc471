@@ -1,0 +1,575 @@
+<?php
+ini_set('display_errors',0); 
+error_reporting(0);
+header("Cache-Control: private, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // A date in the past
+
+/*////////////////////////////////////////////////////////////////////////////////
+Functions
+///////////////////////////////////////////////////////////////////////////////*/
+// function write_log_file($filename,$message){
+	// $file_handle_2 = fopen($filename, 'a');	
+	// $data = date ('Y-m-d H:i:s') . "-" . $message . "\n";			
+	// $startTime = microtime();
+	  // do {
+		// $canWrite = flock($file_handle_2, LOCK_EX);
+		// // If lock not obtained sleep for 0 - 100 milliseconds, to avoid collision and CPU load
+		// if(!$canWrite) usleep(round(rand(0, 100)*1000));
+	  // } while ((!$canWrite)and((microtime()-$startTime) < 1000));
+	// $canWrite = 1;
+	  // //file was locked so now we can store information
+	  // if ($canWrite) {
+		// fputs($file_handle_2, $data);
+	  // }	
+	// fclose($file_handle_2);
+	// return 1;
+// }//end function
+
+function write_log_file($user,$event,$affected,$details){
+	require "_config.php";
+		$mysql_link = mysql_connect($dbhost,$dbusername,$dbpass) or die("Failed to connect to MySQL");
+		mysql_select_db($dbname);
+		// First check previous connections number
+		$query ="INSERT INTO `log` 
+		(`id`, `user`, `event`, `details`, `timestamp`, `affected`) 
+		VALUES 
+		(NULL, '$user', '$event', '$details', CURRENT_TIMESTAMP, '$affected');";
+		$r_query = mysql_query($query);
+		
+		if (mysql_affected_rows() <> 1) {
+			// Error while updating. Return false
+			return false;
+		} else {
+			return true;
+		}
+
+}//end function
+
+function cutoff_date ($test_date){
+	if ((date('W',$test_date) % 2) == 0) { // week is even, payday is last friday
+		$cutoff = date('Y-m-d', strtotime('last Sunday + 2 weeks',$test_date)); 
+		$payday = date('Y-m-d', strtotime('next Friday',$test_date)); 
+		//if ((date("D",$test_date))=="Sat" || (date("D",$test_date))=="Sun" )
+		if ((date("D",$test_date))=="Sun" ){
+			$payday = date('Y-m-d', strtotime('last Friday',$test_date));
+			$cutoff = date('Y-m-d', strtotime('last Sunday + 1 week',$test_date));
+		}
+		if ((date("D",$test_date))=="Fri"){$payday = date('Y-m-d', strtotime('last Friday +1 week',$test_date));}
+	} 
+	else { // week is odd
+		$payday = date('Y-m-d', strtotime('next Friday +1 week',$test_date));
+		$cutoff = date('Y-m-d', strtotime('last Sunday +1 week',$test_date)); 
+		//if ((date("D",$test_date))=="Sat" || (date("D",$test_date))=="Sun" )
+		if ((date("D",$test_date))=="Sun" ){
+			$payday = date('Y-m-d', strtotime('last Friday +1 week',$test_date));
+			$cutoff = date('Y-m-d', strtotime('this Sunday',$test_date));
+		}
+	} 
+	return $cutoff;
+}//end function
+
+function getEmail ($user,$table){		
+	$sql = "SELECT email FROM $table WHERE `active`='active' AND username='$user'";
+	$retval = mysql_query($sql) or die(mysql_error());
+	$row = mysql_fetch_array($retval);
+	return $row['email'];
+}
+
+/*////////////////////////////////////////////////////////////////////////////////
+Includes
+///////////////////////////////////////////////////////////////////////////////*/
+	require('_config.php');
+	require_once("phpauthent/phpauthent_core.php");
+	require_once("phpauthent/phpauthent_config.php");
+	require_once("phpauthent/phpauthentadmin/locale/".$phpauth_language);
+	
+/*////////////////////////////////////////////////////////////////////////////////
+Page Protection
+///////////////////////////////////////////////////////////////////////////////*/
+	$usersArray = array("administrator");
+	$groupsArray = array("admin","employee","payroll","supervisor");
+	pageProtect($usersArray,$groupsArray);
+
+/*////////////////////////////////////////////////////////////////////////////////
+Variables
+///////////////////////////////////////////////////////////////////////////////*/	
+	//get and set initial variables
+		$connection = mysql_connect($dbhost, $dbusername, $dbpass);
+		$SelectedDB = mysql_select_db($dbname) or die('Could not connect: ' . mysql_error());
+		
+		$user 			= getUsername();
+		$user_email 	= getEmail($user,$db_employee);
+		$delete_record	=$_GET['delete_record'];
+		
+		$employee = $_GET['employee'];
+		if ($employee == ""){
+			$employee = $user;
+		}
+		//Sets the columns visible in the table format (column name=>display name) special ("edit,"amount","price","del","delete","filename","hours")
+			$columns=array("edit"=>"","jobnumber"=>"Job No","date"=>"Date","time_in"=>"In","time_out"=>"Out", "hours"=>"Hours", "division"=>"Div", "sub_division"=>"Sub-Div", "comment"=>"Comment","del"=>"");
+		
+		// if (isEnabled(array("administrator"),array("admin","payroll"))){
+			// $columns=array("edit"=>"","jobnumber"=>"Job Number","employee"=>"Employee","date"=>"Date","time_in"=>"Time In","time_out"=>"Time Out", "hours"=>"Hours", "division"=>"Division", "sub_division"=>"Sub-Division", "comment"=>"Comment""del"=>"");
+		// }
+		
+		$db_table="request_for_information";
+		$page_title="Request For Information";	
+
+	//Edit or upload page
+		$edit_page="emply_time_entry.php";	
+	
+	//set initial variables
+		$jobnumber = "All";
+		$date = strtotime (date ("Y-m-d"));
+		$date_end= cutoff_date($date);
+		$display_cutoff = cutoff_date(strtotime ($date_end));
+		$previous_cutoff = date ("Y-m-d" , strtotime('-14 days',strtotime($display_cutoff)));
+
+	//if date is passed with url
+		if (isset($_POST['previous'])){
+			$date_current = $_POST['date_current'];
+			$jobnumber = $_POST['jobnumber'];
+			$employee = $_POST['employee'];	
+			$display_cutoff = cutoff_date(strtotime ($date_current));
+			$date_end = date ("Y-m-d" , strtotime('-14 days',strtotime($display_cutoff)));
+		}
+		
+		if (isset($_POST['next'])){
+			$date_current = $_POST['date_current'];
+			$jobnumber = $_POST['jobnumber'];
+			$employee = $_POST['employee'];	
+			$display_cutoff = cutoff_date(strtotime ($date_current));
+			$date_end = date ("Y-m-d" , strtotime('+14 days',strtotime($display_cutoff)));
+		}
+
+	//calculate payperiods and cutoffs
+		$date_start = date ("Y-m-d" , strtotime('-13 days',strtotime($date_end)));
+		$cutoff_code = "";
+		
+	//view options
+		if (isset($_POST['submit']) || isset($_POST['final'])) {
+
+			$jobnumber = $_POST['jobnumber'];
+			$date_start = $_POST['date1'];
+			$date_end = $_POST['date2'];
+			$employee = $_POST['employee'];	
+		}
+	
+/*/////////////////////////////////////////////////
+Delete Record
+/////////////////////////////////////////////////*/
+			if ($delete_record!=""){	
+				mysql_query("DELETE FROM $db_table WHERE uid='$delete_record'") or die(mysql_error());  
+				 //write log
+					$data="jn:$jobnumber,$date,$start_time,$end_time,$delete_record";
+					write_log_file ($user,'Time Delete',$employee,$details);
+				echo '<head><meta name="viewport" content="width=device-width, user-scalable=no" /><meta name="HandheldFriendly" content="true"><meta name="MobileOptimized" content="320"></head>';
+				echo "<br><br><b><big>Successfully Deleted</b></big><br><br>";
+				echo 	'<input type="Button" value="Back" onclick="location.href=\''.$_SERVER['PHP_SELF']  .'?j='.$masked_jobnumber  .'\'">';
+				die();		
+			}//end if delete
+
+///////////////////////////////////////////////////////////////
+
+	//get employee names
+		$sql = "SELECT username FROM $db_employee WHERE `active`='active'";
+		//echo $sql;
+		$retval = mysql_query($sql) or die(mysql_error());
+		while ($row = mysql_fetch_array($retval)) {
+			$employee_list[]=$row['username'];
+		}
+		sort ($employee_list);
+	//get data
+		$where = "";
+		$where = " WHERE (`date` BETWEEN '$date_start' AND '$date_end')";
+		if ($employee != "All"){$where .= " AND employee = '$employee'";}
+		if ($jobnumber != "All" AND $jobnumber!=""){$where .= " AND jobnumber = '$jobnumber'";}
+		$order = " ORDER BY `date`,`time_in`";
+		$sql = "SELECT * FROM $db_timelog" . $where . $order;
+		echo $sql;
+		$retval = mysql_query($sql) or die(mysql_error());
+		
+		$sum = mysql_query("SELECT SUM(hours) AS totalhours FROM $db_timelog".$where);
+		while($row=mysql_fetch_array($sum))
+		{
+			$total_hours = $row['totalhours'];
+		}
+
+///////////////////////////////////////Table 2 - Calculate Summary by Day
+	//date start to date end
+	$table2 = '<div style="line-height:1;color:#000; text-align:left;"><br><br><b>Daily Total</b><br>';
+	$t1=strtotime($date_start);
+	$t2=strtotime($date_end);	
+	$oneday = (24*60*60);
+	$x=$t1;
+	while ($x<=$t2){
+		$d1= date ("Y-m-d",$x);
+		$where1 = " WHERE (`date` = '$d1')";
+		if ($employee != "All"){$where1 .= " AND employee = '$employee'";}
+		if ($jobnumber != "All"){$where1 .= " AND jobnumber = '$jobnumber'";}
+		$sql = "SELECT * FROM $db_timelog" . $where1;
+		$sum = mysql_query("SELECT SUM(hours) AS totalhours FROM $db_timelog".$where1);	
+			while($row=mysql_fetch_array($sum))
+				{
+					$hrs = $row['totalhours'];
+				}
+		if ($hrs>0){$table2 .= date("D-M-d",$x) . ": <b>" . round($hrs, 2) . "</b><br>";}
+			$x+=$oneday;
+	}
+	$table2 .="</div>";
+
+///////////////////////////////////////Table 2 - Calculate Summary	
+	//get data
+		$sql1 = "SELECT SUM(hours) AS totalhours FROM $db_timelog WHERE (`date` BETWEEN '$date_start' AND '$date_end') AND employee='$employee' AND jobnumber = '1019';";
+		$return = mysql_query($sql1) or die(mysql_error());
+		
+		$table3 = '<div style="line-height:1; color:#000; text-align:left;"><br><br><b>Other Totals</b><br>Total Hours:'.round($total_hours,2);
+		$row=mysql_fetch_array($return);
+		$bank_time=$row['totalhours'];
+		$table3 .="<br>Bank Time:".round($bank_time,2)."<br>";
+		
+		$sql1 = "SELECT SUM(hours) AS totalhours FROM $db_timelog WHERE (`date` BETWEEN '$date_start' AND '$date_end') AND employee='$employee' AND jobnumber = '1015';";
+		$return = mysql_query($sql1) or die(mysql_error());
+		$row=mysql_fetch_array($return);
+		$vacation_time=$row['totalhours'];
+		$table3 .="Vacation Time:".  round($vacation_time,2) ."<br>";
+		$table3 .='Hours Worked:'. round(($total_hours - $vacation_time - $bank_time),2).'</div>';
+
+///////////////////////////////////////Table 1 - Main Calculate Summary by Day	
+//table code
+		$table = '<table class="dbtable" style="width: 100%;"><tr>';
+			//Show Headings
+				foreach ($columns as $x=>$y){
+					$heading=$y;
+					if ($direction =="ASC") {
+						$table .= "<th><b><a href=". $_SERVER['PHP_SELF']."?j=$masked_jobnumber&sort_by=$x&direction=DESC><b>$heading</b></a></b></th>";
+					}
+					else {
+						$table .= "<th><b><a href='". $_SERVER['PHP_SELF']."?j=$masked_jobnumber&sort_by=$x&direction=ASC'><b>$heading</b></a></b></th>";
+					}
+				  }
+				$table .= '</tr>';
+			//Output the data		
+				$j=1;
+				while($row = mysql_fetch_array($retval))
+				{
+					// Color odd lines
+					if ($j % 2 == 0){ 
+						$table .= '<tr style="background-color: #f0f0f0;">'; 
+					} 
+					else { 
+						$table .= '<tr style="background-color: #e0e0e0;">';
+					}
+					foreach ($columns as $i=>$value){
+						$color = "000000";//basic color
+							foreach ($status_color as $status_key=>$color_value){
+								if ($row['status']==$status_key){
+								$color=$color_value;
+								}
+							}
+						$table .=  '<td style="color:#' . $color . ';">';  
+				//check if special cell and format set formatting conditions				
+						if ($i == "edit") { 
+							$id_number = $row['uid'];
+							$table .= '<a href="'.$edit_page .'?id='. $id_number . '"><img src="img/i_edit.png" /></a></td>';
+						}
+						elseif ($i == "filename"){
+							$filename=$row[$i];
+							$table .= '<a href="'.	$path . $filename.'"><img src="img/doc.png" /></a>';
+						}
+						elseif ($i=="amount" || $i=="price"){ 
+							$table .= money_format("%n",$row[$i]);
+						}
+						elseif ($i=="hours"){ 
+							$table .= sprintf("%01.2f", $row[$i]).'</td>';
+						}
+						elseif ($i=="delete" || $i=="del"){ 
+							//$table .=  '<a href="'.$_SERVER['PHP_SELF'].'?delete_record=' . $row['uid'] . '&j='. $masked_jobnumber . '"><img src="img/i_delete.png" /></a>';
+							$table .=  '<a href="" onClick="checkDelete(\''.$row['uid'].'\')" ><img src="img/i_delete.png" /></a>';
+						}
+				//Regular Cell	
+						else{ 
+							$table .= $row[$i] . "</td>"; 
+						}	
+					}//end foreach for column
+
+				// add extra columns (if required)	
+					$table .= '</tr>';
+					$j++;
+				}//end while
+			
+		$table .='</table>';
+	$table .= '<div style="color:#000; text-align:left;"><b>Total Hours:</b>'. round($total_hours,2) . "</div>";	
+	
+/////////////////////////////////email submitted timelog	
+
+if (isset($_REQUEST['final'])) { // if finalize timesheet is selected
+		$to = $accounting_email;
+	//$to = "jasond@jdsservices.ca";
+		$from = "noreply.timesheet@jdsservices.ca";
+		$subject = "Timesheet - ".$employee.' - ' . $date_end;
+	//begin of HTML message
+		$message = '<head>
+		<style>
+		table {border-collapse: collapse; empty-cells: show ; border:1px solid black;} 
+		td,th {border:1px solid black;} 
+		</style> 
+		</head>';
+		$message = '<html><body bgcolor="#FFFFFF">';
+		$message .= '<b>Timesheet</b><br><br>';
+		$message .= 'Employee:'.$employee;
+		$message .= '<br>Pay Period:'. $date_start . " to " . $date_end;
+		$message .= '<br><hr>';
+		$table1 = str_replace ("><",">\n<",$table);
+		$message .= $table1;
+		$message .= $table2;
+		$message .= $table3;
+		$message .= '</body></html>';
+	//end of message
+			$headers  = "From: $from\r\n";
+			$headers .= "Cc: $user_email\r\n";
+			$headers .= "Content-type: text/html\r\n";   
+	// Send the email.
+		mail($to, $subject, $message, $headers);
+
+		echo "Timesheet has been sent to:$to and cc: $user_email....!";
+						// $data=$lname . ":$employee Timelog Submitted";
+						// write_log ($logfile,$data  );	
+		echo '<head><meta name="viewport" content="width=device-width, user-scalable=no" /><meta name="HandheldFriendly" content="true"><meta name="MobileOptimized" content="320"></head>';
+		echo "<br><br><b><big>Successfully Submitted</b></big><br><br>";
+		echo '<input type=button value="Back" onClick="location.href=\'employee_time_view.php\'">';
+die ();
+}//end final	
+	
+?>
+
+
+<!DOCTYPE HTML>
+<!--
+	TXT 2.5 by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title><? echo $company_name?></title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="<? echo $company_description ?>" />
+		<meta name="keywords" content="<? echo $company_keywords ?>" />
+		<link href="http://fonts.googleapis.com/css?family=Open+Sans:400,700|Open+Sans+Condensed:700" rel="stylesheet" />
+		<script src="js/jquery.min.js"></script>
+		<script src="js/config.js"></script>
+		<script src="js/skel.min.js"></script>
+		<script src="js/skel-panels.min.js"></script>
+		<noscript>
+			<link rel="stylesheet" href="css/skel-noscript.css" />
+			<link rel="stylesheet" href="css/style.css" />
+			<link rel="stylesheet" href="css/style-desktop.css" />
+			<link rel="stylesheet" href="css/font-awesome.css" />
+		</noscript>
+		
+		<link rel="stylesheet" href="css/jquery-ui.min.css">
+		<link rel="stylesheet" href="css/jquery-ui.theme.min.css">
+		<link rel="stylesheet" href="css/jquery-ui.structure.min.css">
+		<link rel="stylesheet" href="css/jquery-ui-timepicker-addon.css">
+		<script src="js/jquery-2.1.1.min.js"></script>
+		<script src="js/jquery-ui.min.js"></script>
+		<script src="js/jquery-ui-timepicker-addon.js"></script>
+		<script>
+			$(function() {
+				$( "#datepicker1" ).datepicker(
+					{
+					dateFormat: "yy-mm-dd",
+					showButtonPanel: true,
+					changeMonth: true,
+					changeYear: true,
+					showWeek: true,
+					firstDay: 1
+					}
+				);
+				$( "#datepicker2" ).datepicker(
+					{
+					dateFormat: "yy-mm-dd",
+					showButtonPanel: true,
+					changeMonth: true,
+					changeYear: true,
+					showWeek: true,
+					firstDay: 1
+					}
+				);
+			});
+		</script>
+
+		<style type="text/css">
+		  #datepicker1, #datepicker2{
+			background-image:url("images/calendar.png");
+			background-position:right center;
+			background-repeat:no-repeat; }
+		</style>
+		
+		<!--[if lte IE 9]><link rel="stylesheet" href="css/ie9.css" /><![endif]-->
+		<!--[if lte IE 8]><script src="js/html5shiv.js"></script><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
+		<!--[if lte IE 7]><link rel="stylesheet" href="css/ie7.css" /><![endif]-->
+	</head>
+	<body class="homepage">
+
+		<!-- Header -->
+			<?php //include('_header.php');  ?>
+		<!-- /Header -->
+
+		<!-- Nav -->
+			<?php include('_menu_employee.php');  ?>
+		<!-- /Nav -->
+		
+		<!-- Banner -->
+		<!-- /Banner -->
+
+		<!-- Main -->
+			<div id="main-wrapper">
+				<div id="main" class="container">
+					<div class="row flush" style="padding:0em;">
+
+						<div class="12u">
+							
+							<!-- Highlight -->
+								<section class="is-page-content">
+
+									<header>
+										<h3>Timelog View - Current Period:<?php echo $date_start . " to " . $date_end ?></h3>
+									</header>
+						
+											<div id="menu">
+												<ul>
+												<?php //if ($check['team']=="Admin"){echo '<li><a href="employee_time_summary.php" ><span class="button-menu"><i class="fa fa-book fa-fw"></i>View Overall Summary</span></a></li>';}?>
+												<li><a href="employee_time_select_job.php" ><span class="button-menu"><i class="fa fa-plus fa-fw"></i>&nbsp; Add Time</span></a></li>
+												</ul>
+											</div>
+						</div>
+					</div>
+					<div class="row flush" style="padding:0em;">					
+						<div class="12u">
+												<hr>
+												<form style="" method="post" action="<?php echo $_SERVER['PHP_SELF'];?>" name="viewoptions">
+													<input class="submit" type="submit" name="previous" value="Previous Cutoff">
+													<input class="submit" type="submit" name="next" value="Next Cutoff">
+													<br>
+													<input name="employee" type="hidden" value=<?php echo $employee;?>>
+													<input name="date_current" type="hidden" value=<?php echo $date_end;?>>
+												</form>
+												<hr>
+					
+						</div>
+					</div>
+					<div class="row flush" style="padding:0em;">
+											<div class="4u" style="border-right:1px;">
+												<form style="" method="post" action="<?php echo $_SERVER['PHP_SELF'];?>" name="viewoptions">
+													<label>Start Date:</label><input id="datepicker1" class="text" name="date1" type="textbox" readonly="readonly" value="<?php echo $date_start; ?>">
+													<label>End Date:</label><input class="text" id="datepicker2" name="date2" type="textbox" readonly="readonly" value="<?php echo $date_end; ?>"><br>
+													<input class="submit" type="submit" name="submit" value="Update View";/>
+												
+											</div>		
+													
+											<div class="4u">
+												
+											<?php 
+													if (isEnabled(array("administrator"),array("admin","payroll"))){
+														echo '<br>';
+														echo 'Job Number:';
+														// echo '<select name="jobnumber">';
+														// echo '<option>All</option>';
+														// foreach ($job_number_list as $x){
+														// echo "<option";
+														// if ($x == $jobnumber) {echo " selected";}
+														// echo ">$x</option>";}
+														// echo '</select>';
+														echo '<input type="text" name="jobnumber" value="';
+														echo $jobnumber;
+														echo '">';
+														echo '     Employee:';
+														echo '<select name="employee">';
+														echo '<option>All</option>';
+														foreach ($employee_list as $x){
+														echo "<option";
+														if ($x == $employee) {echo " selected";}
+														echo ">$x</option>";}
+														echo '</select>';
+														echo '<input class="submit" type="submit" name="submit" value="Update View";/>';
+													}
+													else{
+														echo '<input type="hidden" name="employee" value="'. $employee . '">';
+														echo '<input type="hidden" name="jobnumber" value="All">';
+													}
+													?>
+												</form>
+											</div>
+											<div class="4u">
+												<br><hr>
+												<form style="" method="post" action="<?php echo $_SERVER['PHP_SELF'];?>" name="viewoptions">
+													
+													<input name="final" type="checkbox" value="1">Confirm timesheet submission for dates shown<br>
+													<input class="submit" name="submit_time" value="Submit Timelog" type="submit">
+												</form>
+											</div>
+											<hr>
+					</div>
+								<hr>
+								<div class="row flush" style="padding:0em;">
+											<div class="12u">	
+												<b>Timelog</b>
+												<?php echo $table;?>
+											</div>
+								</div>
+								
+								<div class="row flush" style="padding:0em;">
+									<hr>
+									<div class="4u">		
+												<?php echo $table2;?>
+									</div>
+									<div class="4u">			
+												<?php echo $table3;?>
+									</div>
+									<div class="4u">
+									</div>
+								
+								</div>
+											
+										
+										
+								</section>
+							<!-- /Highlight -->
+
+						</div>
+						
+					</div>
+					
+					<div class="row">
+						<div class="12u">
+
+							<!-- Features -->
+							
+								
+							<!-- /Features -->
+
+						</div>
+					</div>
+	
+				</div>
+			</div>
+		<!-- /Main -->
+
+		<!-- Footer -->
+			<footer id="footer" class="container">
+
+
+				<!-- Copyright -->
+					<div id="copyright">
+						&copy; <? echo $company_name; ?> | Template: <a href="http://html5up.net/">HTML5 UP</a>
+					</div>
+				<!-- /Copyright -->
+
+			</footer>
+		<!-- /Footer -->
+
+	</body>
+</html>

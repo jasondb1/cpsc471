@@ -1,0 +1,125 @@
+/* 
+// $Author: vincentarn $
+// $Date: 2005/04/08 12:54:39 $
+// $Id: phpauth.css,v 1.2 2005/04/08 12:54:39 vincentarn Exp $
+// $Revision: 1.2 $
+
+// phpAuthent - A security module for PHP enabled web sites
+// Copyright (C) 2005 Arnaud Vincent
+
+// This file is part of phpAuthent.
+
+// phpAuthent is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+
+// phpAuthent is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+// Contact author at vincentarn@users.sourceforge.net
+*/
+
+.headmenu {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: small;
+}
+a:link {
+	text-decoration: none;
+	color: #0033CC;
+}
+a:visited {
+	text-decoration: none;
+	color: #0033CC;
+}
+a:hover {
+	text-decoration: underline;
+	color: #0033CC;
+}
+a:active {
+	color: #0033CC;
+}
+h1 {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: large;
+}
+h2 {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 20px;
+	color: #999999;
+}
+h3 {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 18px;
+	font-weight: bold;
+}
+h4 {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 14px;
+	font-weight: bold;
+}
+h5 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 24px;
+}
+h6 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 24px;
+}
+.titlepage {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: large;
+	font-weight: bold;
+	border-top-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	border-left-width: 1px;
+	border-bottom-style: solid;
+	border-top-color: #C3C3C3;
+	border-right-color: #C3C3C3;
+	border-bottom-color: #C3C3C3;
+	border-left-color: #C3C3C3;
+}
+.titleapp {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: x-large;
+	font-weight: bold;
+	color: #999999;
+	line-height: 40px;
+}
+.textcopy {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: x-small;
+	color: #333333;
+	border-top-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	border-left-width: 1px;
+	border-top-style: solid;
+	border-top-color: #999999;
+	border-right-color: #999999;
+	border-bottom-color: #999999;
+	border-left-color: #999999;
+}
+
+body,td,th {
+	font-family: Georgia, Times New Roman, Times, serif;
+}.txtMessage {
+	font-weight: bold;
+	color: #339966;
+}
+.txtError {
+	font-weight: bold;
+	color: #FF0000;
+}
+.txtDemo {
+
+	font-weight: bold;
+	color: #FF9900;
+}
