@@ -1,6 +1,6 @@
 <?php
-ini_set('display_errors',0); 
-error_reporting(0);
+//ini_set('display_errors',0); 
+//error_reporting(0);
 header("Cache-Control: private, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // A date in the past
