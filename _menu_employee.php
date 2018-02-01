@@ -2,7 +2,6 @@
 				<ul>
 					<li class="current_page_item"><a href="index.php">Home</a></li>
 					<li><a href="_employee_menu.php">Employee Menu</a></li>
-					<li><a href="dashboard/dashboard.php">Dashboard</a></li>
 					<li><a href="_administration_menu.php">Admin Menu</a></li>
 					<li><a href="phpauthent/phpauthentadmin/change_password.php">Change Password</a></li>
 					<?php 

@@ -91,8 +91,5 @@ $snow_activity = array (
 "Machine",
 "Gravel",
 "Truck/Trailer"
-);
-
-include_once ("_snowsites.php");
-include_once ("_divisions.php");	
+);	
 ?>

@@ -5,9 +5,6 @@
 Includes
 ///////////////////////////////////////////////////////////////////////////////*/
 	require('_config.php');
-	require('Database.php');
-	require('FormHtml.php');
-	require('FormTextBox.php');
 	require_once("phpauthent/phpauthent_core.php");
 	require_once("phpauthent/phpauthent_config.php");
 	require_once("phpauthent/phpauthentadmin/locale/".$phpauth_language);
@@ -18,31 +15,20 @@ Page Protection
 ///////////////////////////////////////////////////////////////////////////////*/	
 	$usersArray  = array();
 	$groupsArray = array("admin","supervisor");
-	pageProtect($usersArray,$groupsArray);	
+	//pageProtect($usersArray,$groupsArray);	
 
 /*////////////////////////////////////////////////////////////////////////////////
 Functions
 ///////////////////////////////////////////////////////////////////////////////*/
-//new Database object
-	$database = new Database($dbhost, $dbname, $dbusername, $dbpass);
-	
-		//$mysql_link = new MySQLi($dbhost, $dbusername, $dbpass, $dbname);
-	//if ($mysql_link->connect_errno) {die($mysql_link->connect_error);}
+//open database
+	$mysql_link = new MySQLi($dbhost, $dbusername, $dbpass, $dbname);
+	if ($mysql_link->connect_errno) {die($mysql_link->connect_error);}
 		
 /*////////////////////////////////////////////////////////////////////////////////
 Variables
 ///////////////////////////////////////////////////////////////////////////////*/
 //get and set initial variables
 	$user 			= trim(getUsername());
-	
-	$fJobnumber = new FormTextBox("jobnumber", "Jobnumber");
-	$fDescription = new FormTextBox("description", "Description");
-	
-	$formObj = new FormHtml();
-	$fields = array($fJobnumber, $fDescription);
-	$formHtml = $formObj->htmlForm($fields);
-	//echo $fieldHtml;
-	//die();
 
 /*////////////////////////////////////////////////////////////////////////////////
 Process Form
@@ -115,7 +101,7 @@ Process Form
 		 '$supervisor',
 		 '$status',
 		 '$start_date',
-		 null,
+		 '$end_date',
 		 '$quote_number',
 		 '$po_number',
 		 '$notes',
@@ -124,11 +110,11 @@ Process Form
 		 '$contact_number',
 		 '$opened_by',
 		 '$date_opened',
-		 null,
-		 null,
+		 '$date_invoiced',
+		 '$date_closed',
 		 '$last_modified',
-		null,
-		 null
+		 '$require_div',
+		 '$require_subdiv'
 		)";
 	}
 	else{
@@ -159,14 +145,12 @@ Process Form
 	}//end else
 	//echo $sql;
 
-	//$retval = $mysql_link->query($sql) or die($mysql_link->error);
-	$database->query($sql);
+	//$retval = mysql_query($sql) or die(mysql_error());
 	$retval = $mysql_link->query($sql);
-			
 			//write log
-				//$details="jn:$jobnumber,$date_opened,$customer,$description";
-				//if ($id==""){ $event="Job Entered/Changed";} else { $event="Time Entered";}
-				//write_log_file ($user,$event,$employee,$details);
+				$details="jn:$jobnumber,$date_opened,$customer,$description";
+				if ($id==""){ $event="Job Entered/Changed";} else { $event="Time Entered";}
+				write_log_file ($user,$event,$employee,$details);
 				
 	echo '<head><meta name="viewport" content="width=device-width, user-scalable=no" /><meta name="HandheldFriendly" content="true"><meta name="MobileOptimized" content="320"></head>';
 	echo "<br><br><b><big>Successfully Submitted</b></big><br><br>";
@@ -334,9 +318,6 @@ if ($edit_record !=""){
 							<div class="row flush" style="padding:0em;">
 								<div class="12u">
 									<hr>
-									
-									<?php echo $formHtml; ?>
-									
 									<form method="post" action="<?php echo $_SERVER['PHP_SELF'];?>" name="jobedit">
 										<input class="submit" type="submit" name="submit" value="Submit"/>&nbsp;
 										<input class="submit" type="submit" name="submit" value="Cancel" onclick="document.jobedit.action='employee_job_view.php';"/>&nbsp;

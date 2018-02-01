@@ -1,6 +1,6 @@
 <?php
-ini_set('display_errors',0); 
-error_reporting(0);
+//ini_set('display_errors',0); 
+//error_reporting(0);
 header("Cache-Control: private, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // A date in the past
@@ -9,8 +9,6 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // A date in the past
 Includes
 ///////////////////////////////////////////////////////////////////////////////*/
 	require('_config.php');
-	require('Database.php');
-	require('Table.php');
 	require_once("phpauthent/phpauthent_core.php");
 	require_once("phpauthent/phpauthent_config.php");
 	require_once("phpauthent/phpauthentadmin/locale/".$phpauth_language);
@@ -27,8 +25,19 @@ Page Protection
 Variables
 ///////////////////////////////////////////////////////////////////////////////*/	
 	//get and set initial variables
-		$database = new Database($dbhost, $dbname, $dbusername, $dbpass);
+		$mysql_link = new MySQLi($dbhost, $dbusername, $dbpass, $dbname);
+		
+		if ($mysql_link->connect_errno) {
+			die($mysql_link->connect_error);
+		}
+	
+		$db_table="jobdata";
+		$page_title="View Jobs";	
+	//Edit or upload page
+		$edit_page="employee_job_entry.php";	
 
+		$headings = array("edit"=>"Edit","jobnumber"=>"Job No.","description"=>"Description","location"=>"Location","customer"=>"Customer","bill_to"=>"Bill To","supervisor"=>"Supervisor","status"=>"Status","start_date"=>"Start Date","end_date"=>"End Date","quote_number"=>"Quote","po_number"=>"PO No","notes"=>"Notes","invoice_number"=>"Invoice","contact_name"=>"Contact","contact_number"=>"Number","opened_by"=>"Opened By","date_opened"=>"Date Opened","date_invoiced"=>"Date Invoiced","date_closed"=>"Date Closed","wo"=>"WO");
+		
 		$search = $_GET['search']; 
 
 /*////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +87,7 @@ Set View Options
 		}
 		else{
 		//Sets the columns visible in the table format (column name=>display name) special ("edit,"amount","price","del","delete","filename","hours")
-			//$columns=array("edit"=>"","jobnumber"=>"Job No","description"=>"Description","location"=>"Location","customer"=>"Customer", "supervisor"=>"Supervisor", "status"=>"Status", "notes"=>"Notes");
+			$columns=array("edit"=>"","jobnumber"=>"Job No","description"=>"Description","location"=>"Location","customer"=>"Customer", "supervisor"=>"Supervisor", "status"=>"Status", "notes"=>"Notes");
 		}
 	
 		// if (isEnabled(array("administrator"),array("admin","payroll"))){
@@ -98,7 +107,7 @@ Set View Options
 		
 
 		if ($search != ""){
-			 $where = " jobnumber LIKE '%$search%'
+			 $where = " WHERE jobnumber LIKE '%$search%'
 						OR notes LIKE '%$search%'
 						OR description LIKE '%$search%'
 						OR location LIKE '%$search%'
@@ -111,11 +120,11 @@ Set View Options
 		else{
 				//$where =" WHERE (status <> 'Completed' OR status = 'Recurring') AND status <> 'Permanent'";
 				if( !isset( $_COOKIE['view_options'] ) ){
-					$where =" ((status = 'Completed' AND invoice_number = '')  OR status = 'Recurring') AND status <> 'Permanent' OR status='In Progress'";
+					$where =" WHERE ((status = 'Completed' AND invoice_number = '')  OR status = 'Recurring') AND status <> 'Permanent' OR status='In Progress'";
 				}
 				else{
 					$n=0;
-					//$where = " WHERE";
+					$where = " WHERE";
 					if ($view_options[0]==1){ if ($n==1){ $where .= " OR ";}$where .= " status = 'In Progress'"; $n=1;}
 					//if ($view_options[1]==1){ if ($n==1){ $where .= " OR ";}$where .= " status = 'Recurring'";$n=1'}
 					//if ($view_options[2]==1){ if ($n==1){ $where .= " OR ";}$where .= " status = 'Recurring'";$n=1;}
@@ -123,17 +132,24 @@ Set View Options
 					if ($view_options[4]==1){ if ($n==1){ $where .= " OR ";}$where .= " status = 'Recurring'";$n=1;}
 					if ($view_options[5]==1){ if ($n==1){ $where .= " OR ";}$where .= " invoice_number <> ''";$n=1;}
 					if ($n==0){
-						$where =" ((status = 'Completed' AND invoice_number = '')  OR status = 'Recurring') AND status <> 'Permanent' OR status='In Progress'";
+						$where =" WHERE ((status = 'Completed' AND invoice_number = '')  OR status = 'Recurring') AND status <> 'Permanent' OR status='In Progress'";
 					}
 				}
 		}
-
+		
 /*/////////////////////////////////////////////////
 Delete Record
 /////////////////////////////////////////////////*/
 			if ($delete_record != ""){
-				echo $database->deleteRecord($dbtable, "uid='$delete_record'");
-				die();	
+	
+				$mysql_link->query("DELETE FROM $db_table WHERE uid='$delete_record'");  
+				 //write log
+					$details="jn:$jobnumber,$date,$delete_record";
+					write_log_file ($user,'Job Delete',$employee,$details);
+				echo '<head><meta name="viewport" content="width=device-width, user-scalable=no" /><meta name="HandheldFriendly" content="true"><meta name="MobileOptimized" content="320"></head>';
+				echo "<br><br><b><big>Successfully Deleted</b></big><br><br>";
+				echo 	'<input type="Button" value="Back" onclick="location.href=\''.$_SERVER['PHP_SELF']  .'?j='.$masked_jobnumber  .'\'">';
+				die();		
 			}//end if delete
 
 ///////////////////////////////////////////////////////////////
@@ -141,34 +157,93 @@ Delete Record
 	//$employee_list = getEmployeeNames();//get employee names
 	
 	//get data
-	//TODO: change hard coded order below
-			if ($order_by != ""){
-			 $order = " ORDER BY $order_by $direction";
-		}
-		else{
-				$order =" ORDER BY jobnumber DESC";
-		}
+		$sql = "SELECT * FROM $db_table_jobfile". $where . $order . $max;
+		$retval = $mysql_link->query($sql);
+
 /*/////////////////////////////////////////////////
-//Create Table HTML
+Create Table
 /////////////////////////////////////////////////*/
+//table code
+		$table = '<table id="dbtable" style="width: 100%;"><tr>';
+			//Show Headings
+				foreach ($columns as $x=>$y){
+					if ($direction =="ASC") {
+						$table .= "<th><b><a style='color:#000;' href=". $_SERVER['PHP_SELF']."?j=$masked_jobnumber&sort_by=$x&direction=DESC>$y</a></b></th>";
+					}
+					else {
+						$table .= "<th><b><a style='color:#000;' href='". $_SERVER['PHP_SELF']."?j=$masked_jobnumber&sort_by=$x&direction=ASC'>$y</a></b></th>";
+					}
+				  }
+				$table .= '</tr>';
+			//Output the data		
+				$j=1;
+				while($row = $retval->fetch_assoc())
+				{
+				// Color odd lines
+					if ($j % 2 == 0){ 
+						$table .= '<tr style="background-color: #f0f0f0;">'; 
+					} 
+					else { 
+						$table .= '<tr style="background-color: #e0e0e0;">';
+					}
+					foreach ($columns as $i=>$value){
+						
+												//color code rows
+						if ($row ['status'] == "Completed" && $row ['invoice_number'] !="" ){ $color = "0000ff";} 
+							elseif ($row ['status'] == "Completed" ){ $color = "ff0000";} 
+							elseif ($row ['status'] == "Recurring" ){ $color = "800080";} 
+							elseif ($row ['status'] == "Pending" ){ $color = "707070";} 
+							elseif ($row ['status'] == "On Hold" ){ $color = "707070";} 
+							elseif ($row ['status'] == "In Progress" ){ $color = "000000";} 
+						else  { $color = "000000";}	
+						
+						$table .=  '<td style="color:#' . $color . ';">';  
+				//check if special cell and format set formatting conditions				
+						if ($i == "edit") { 
+								$id_number = $row['jobnumber'];
+								$table .= '<a href="'.$edit_page .'?edit_record='. $id_number . '">
+								<span style="color:#092;">
+								<i class="fa fa-edit fa-lg fa-fw"></i>
+								</span></a></td>';
+						}
+						elseif ($i == "wo") { 
+								$id_number = $row['jobnumber'];
+								$table .= '<a href="employee_workorder_entry.php?edit_record='. $id_number . '">
+								<span style="color:#092;">
+								<i class="fa fa-flag fa-fw"></i>
+								</span></a></td>';
+						}
+						elseif ($i == "filename"){
+							$filename=$row[$i];
+							$table .= '<a href="'.	$path . $filename.'"><span style="color:#00f;"><i class="fa fa-file-o fa-fw"></i></span></a>';
+						}
+						elseif ($i=="amount" || $i=="price"){ 
+							$table .= money_format("%n",$row[$i]);
+						}
+						elseif ($i=="hours"){ 
+							$table .= sprintf("%01.2f", $row[$i]).'</td>';
+						}
+						elseif ($i == "time_in" or $i == "time_out") {
+						$table .= date ("H:i",strtotime($row[$i]));  
+						}
+						elseif ($i=="delete" || $i=="del"){ 
+							$table .=  '<a href="'.$_SERVER['PHP_SELF'].'?delete_record=' . $row['jobnumber'] . '&j='. $masked_jobnumber . '&date_current='. $date_current.'&date_end='.$date_end.'&employee='.$employee.'" onclick="return confirm(\'Confirm Delete?\')" ><span style="color:#f00;"><i class="fa fa-minus-circle fa-fw"></i></span></a>';
+							
+						}
+				//Regular Cell	
+						else{ 
+							$table .= $row[$i] . "</td>"; 
+						}	
+					}//end foreach for column
+
+				// add extra columns (if required)	
+					$table .= '</tr>';
+					$j++;
+				}//end while
+			
+		$table .='</table>';
 	
-	//$db_table="jobdata";
-	//$page_title="View Jobs";	
-	//Edit or upload page
-	//TODO: edit page into table to be associated with edit column deal with the order
-	$edit_page="employee_job_entry.php";	
-	$table = new Table();
-	$table->title="View Jobs";
-	$table->arrayColDisplayName=array("Job No","Description","Location","Customer", "Supervisor", "Status", "Notes");
-	$table->arrayColName=array("jobnumber","description","location","customer", "supervisor", "status", "notes");
-	$table->arrayColType=array("text","text","text","text", "text", "text", "text");
-	$table->dataTable=$db_table_jobfile;
-	$table->enableEdit=true;
-	$table->orderByCol="jobnumber";
-	$table->orderDirection = "DESC";
-	$table->filter = $where;
-	$table->setdb($database);
-	$tableHTML = $table->toHTML();
+	
 
 ?>
 
@@ -264,25 +339,24 @@ Delete Record
 		<!-- /Banner -->
 
 		<!-- Main -->
-		<div id="main-wrapper">
-			<div id="main" class="container">		
-				<!-- Highlight -->
-				<section class="is-page-content">
-					<div class="row flush" style="padding:0em; padding-top:2em;">
-						<div class="12u">
-							<header>
-								<h3><?php echo $page_title; ?></h3>
-							</header>
-					
-							<div id="menu">
-								<ul>
-								<li><a href="employee_job_entry.php" ><span class="button-menu"><i class="fa fa-plus fa-fw"></i>&nbsp; Add Job</span></a></li>
-								</ul>
+			<div id="main-wrapper">
+				<div id="main" class="container">		
+							<!-- Highlight -->
+						<section class="is-page-content">
+							<div class="row flush" style="padding:0em; padding-top:2em;">
+								<div class="12u">
+									<header>
+										<h3><?php echo $page_title; ?></h3>
+									</header>
+						
+											<div id="menu">
+												<ul>
+												<li><a href="employee_job_entry.php" ><span class="button-menu"><i class="fa fa-plus fa-fw"></i>&nbsp; Add Job</span></a></li>
+												</ul>
+											</div>
+									<hr>
+								</div>
 							</div>
-							<hr>
-						</div>
-					</div>
-					
 					<div class="row flush" style="padding:0em;">
 						<div class="9u" >
 							<input class="submit" id="Button1" type="button" value="Show/Hide Opts" onclick="toggle_visibility('opts');" />
@@ -306,7 +380,7 @@ Delete Record
 									if($view_options[5]==1) {echo " checked=checked"; } 
 									echo '><span style="color:#0000ff">Invoiced</span> &nbsp;';}
 									echo 'Items per Page';
-									//add selected for when page numbers are 
+								//add selected for when page numbers are 
 									echo '<select name="page_rows">
 									<option>25</option>
 									<option selected>50</option>
@@ -315,7 +389,7 @@ Delete Record
 									</select>';
 									echo '<br><hr>';
 									
-									//print out view options
+								//print out view options
 									$j=0;
 									foreach ($headings as $x){
 										if (isEnabled(array("administrator"),array("admin","supervisor"))){
@@ -330,43 +404,58 @@ Delete Record
 									}//end foreach
 								?>
 							</form>
+							</div>
+						</div>
+						<div class="3u">
+							<form style="background-color: rgb(255, 255, 255);" method="get" action="<?php echo $_SERVER['PHP_SELF']; ?>" name="viewoptions">
+								<?php  
+									echo '<input class="text" type="text" name="search" placeholder="Search" value="'.$search. '">';
+									echo '<input type="submit" name="submit" value="Search"/>';
+								?>
+							</form>
+						</div>
+											
+					</div>
+								<hr>
+								<div class="row flush" style="padding:0em;">
+											<div class="12u">	
+												<b>Job Files</b>
+												<?php echo $table;?>
+											</div>
+								</div>							
+										
+										
+								</section>
+							<!-- /Highlight -->
+
+						</div>
+						
+					</div>
+					
+					<div class="row">
+						<div class="12u">
+
+							<!-- Features -->
+							
+								
+							<!-- /Features -->
+
 						</div>
 					</div>
-					<div class="3u">
-						<form style="background-color: rgb(255, 255, 255);" method="get" action="<?php echo $_SERVER['PHP_SELF']; ?>" name="viewoptions">
-							<?php  
-								echo '<input class="text" type="text" name="search" placeholder="Search" value="'.$search. '">';
-								echo '<input type="submit" name="submit" value="Search"/>';
-							?>
-						</form>
-					</div>							
-				</div>
-					<hr>
-					<div class="row flush" style="padding:0em;">
-						<div class="12u">	
-							<b>Job Files</b>
-							<?php echo $tableHTML;?>
-						</div>
-					</div>							
-											
-				</section>
-			</div>
-						
-		</div>
-					
-		<div class="row">
-			<div class="12u">
-			</div>
-		</div>
+	
+
 		<!-- /Main -->
 
 		<!-- Footer -->
 			<footer id="footer" class="container">
+
+
 				<!-- Copyright -->
-				<div id="copyright">
-					&copy; <?php echo $company_name; ?> | Template: <a href="http://html5up.net/">HTML5 UP</a>
-				</div>
+					<div id="copyright">
+						&copy; <?php echo $company_name; ?> | Template: <a href="http://html5up.net/">HTML5 UP</a>
+					</div>
 				<!-- /Copyright -->
+
 			</footer>
 		<!-- /Footer -->
 

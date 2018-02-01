@@ -1,1 +1,0 @@
-<?php $snow_sites = array("Apple Wellness","Conglom","Creekside","Crown Shores","Dance Studio","Fletcher Village","Home Hardware (on call)","JDS Shop","Mirolin","Mountain View","Railway Side-walk Creekside","Sobeys","Wolff Residence");sort ($snow_sites);?>

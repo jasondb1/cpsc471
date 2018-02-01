@@ -3,9 +3,6 @@
 					<li class="current_page_item"><a href="index.php">Home</a></li>
 					<li><a href="index.php#about">Who We Are</a></li>
 					<li><a href="index.php#about">What We Do</a></li>
-					<!--<li><a href="TheTeam.php">The Team</a></li>
-					<li><a href="index.php#connect">Gallery</a></li>
-					<li><a href="Testimonials.php">Testimonials</a></li>-->
 					<li><a href="index.php#connect">Connect...</a></li>
 					<?php 
 						if (isUserLogged()){
