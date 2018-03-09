@@ -1,7 +1,7 @@
 <?php
 require_once("FormField.php");
 /*
- * FormTextBox.php
+ * FormTextField.php
  * 
  * Copyright 2018
  * 
@@ -9,12 +9,11 @@ require_once("FormField.php");
  * 
  */
 
-class FormTextBox extends FormField{
-    
+class FormTextField extends FormField{
+     
     private $validationString;
-
-    private $cols = 10;
-    private $rows = 4;
+    
+    private $size = 30;
     
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -32,7 +31,7 @@ class FormTextBox extends FormField{
     function __construct($colName, $displayName, $defaultValue = ""){
         $this->columnName = $colName;
         $this->displayName = $displayName;
-        $this->type = "textbox";
+        $this->type = "text";
         $this->defaultValue = $defaultValue;
     }
     
@@ -49,12 +48,11 @@ class FormTextBox extends FormField{
 
     public function toHtml(){
         $html = '<label>';
-        if ($this->isRequired) {$html .= "*";} 
+        if ($this->isRequired) {$html .= "*";}
         $html .= $this->displayName. ':</label>';
-        $html .= '<textarea class="text" cols="'. $this->cols .'" rows="'. $this->rows . '" name="'. $this->columnName .'" />';
-        $html .= $this->defaultValue;
-        $html .= '</textarea>';
         
+        //TODO: add readonly parameter
+        $html .= '<input class="text" type="'. $this->type    .'" size="'. $this->size .'" name="'. $this->columnName .'" value="'. $this->defaultValue .'"  />';
         return $html;
     }
     
@@ -69,13 +67,12 @@ class FormTextBox extends FormField{
 //
 // Return:  True if string matches the validation rule
 //
-
+    
     public function validate($string){
         $validated = false;
             if( preg_match($this->validationString, $string)) {
                 $validated = true;
             }
-            
         return $validated;
     }
     
@@ -92,22 +89,6 @@ class FormTextBox extends FormField{
 
     public function setValidation($string){
         $this->validationString = $string;
-    }
-    
-////////////////////////////////////////////////////////////////////////////
-//
-// setSize
-//
-// set the size of the text box
-//
-// Param:   $rows - the number of rows
-//          $cols - the number of columns
-//
-// Return:  none
-//
-    public function setSize($rows, $cols){
-        $this->rows = $rows;
-        $this->cols = $cols;
     }
     
 }

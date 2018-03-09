@@ -7,7 +7,6 @@ Includes
 	require('_config.php');
 	require('Database.php');
 	require('FormHtml.php');
-	require('FormTextBox.php');
 	require_once("phpauthent/phpauthent_core.php");
 	require_once("phpauthent/phpauthent_config.php");
 	require_once("phpauthent/phpauthentadmin/locale/".$phpauth_language);
@@ -23,155 +22,76 @@ Page Protection
 /*////////////////////////////////////////////////////////////////////////////////
 Functions
 ///////////////////////////////////////////////////////////////////////////////*/
-//new Database object
+
+	//new Database object
 	$database = new Database($dbhost, $dbname, $dbusername, $dbpass);
-	
-		//$mysql_link = new MySQLi($dbhost, $dbusername, $dbpass, $dbname);
-	//if ($mysql_link->connect_errno) {die($mysql_link->connect_error);}
 		
 /*////////////////////////////////////////////////////////////////////////////////
 Variables
 ///////////////////////////////////////////////////////////////////////////////*/
-//get and set initial variables
+
+	//get and set initial variables
 	$user 			= trim(getUsername());
 	
-	$fJobnumber = new FormTextBox("jobnumber", "Jobnumber");
-	$fDescription = new FormTextBox("description", "Description");
+	//Add Fields
 	
+	// general format of Formelements is (column in table, label)
+	$fJobnumber   = new FormTextField("jobnumber", "Jobnumber");
+	$fDescription = new FormTextField("description", "Description");
+	$fStartDate	  = new FormDateField("start_date", "Start Date");
+	$fNotes		  = new FormTextBox("notes", "Notes");
+	$fHidden	  = new FormHidden("hidden", "Hidden");
+	$fCheckbox	  = new FormCheckbox ("check1", "Check1");
+	
+	$opts = array ("option1", "option2", "option3");
+	$fSelect	  = new FormSelect("selectbox", "Select Box", $opts);
+	
+	//Create form	
 	$formObj = new FormHtml();
-	$fields = array($fJobnumber, $fDescription);
+	$formObj->setTitle("Job Entry");
+	
+	//set fields to display in form
+	$fields = array($fHidden, $fJobnumber, $fDescription, $fStartDate, $fCheckbox, $fSelect, $fNotes); //this is also the display order (TODO: maybe add groupings ie fieldset tag)
+	$formObj->setFields($fields);
+	
+	//get html code of form
 	$formHtml = $formObj->htmlForm($fields);
-	//echo $fieldHtml;
-	//die();
 
 /*////////////////////////////////////////////////////////////////////////////////
 Process Form
 ///////////////////////////////////////////////////////////////////////////////*/
 	if (isset($_POST['submit'])){
-	// //write code for submitting
-	$_POST = sanitize($_POST);
+	
+		//sanitize against sql injections
+		$_POST = sanitize($_POST);
 
-	 $jobnumber		= $_POST['jobnumber']; 
-	 $description	= $_POST['description'];
-	 $location		= $_POST['location'];
-	 $customer		= $_POST['customer'];
-	 $bill_to		= $_POST['bill_to'];
-	 $supervisor	= $_POST['supervisor'];
-	 $status		= $_POST['status'];
-	 $start_date	= $_POST['start_date'];
-	 $end_date		= $_POST['end_date'];
-	 $quote_number	= $_POST['quote_number'];
-	 $po_number		= $_POST['po_number'];
-	 $notes			= $_POST['notes'];
-	 $invoice_number= $_POST['invoice_number'];
-	 $contact_name	= $_POST['contact_name'];
-	 $contact_number= $_POST['contact_number'];
-	 $opened_by		= $_POST['opened_by'];
-	 $date_opened	= $_POST['date_opened'];
-	 $date_invoiced	= $_POST['date_invoiced'];
-	 $date_closed	= $_POST['date_closed'];
-	 $last_modified = date("Y-m-d");
-	 $require_div	= $_POST['require_div'];
-	 $require_subdiv= $_POST['require_subdiv'];
+		//get $_Post values into associated array
+		$values = $formObj->getData($_POST);
 
-
-//Data Validation	 
-	if($customer =="" || $bill_to=="" || $description=="" || $location==""){
-		echo '<head><meta name="viewport" content="width=device-width, user-scalable=no" /><meta name="HandheldFriendly" content="true"><meta name="MobileOptimized" content="320"></head>';
-		echo "<br><br><b><big>Hey BOZO! You forgot some information!</b></big><br>Fill in all of the fields marked with an *<br><br>";
-		echo 	'<input type="Button" value="Back" onclick="history.go(-1)">';
+		//Data Validation - message on error and die 
+		if($values['customer'] == "" || $values['bill_to'] ==""){
+			include('_msg_missing_info.php');
+			die();
+		}
+		 
+		//Write Records to database or edit records 
+		if ($jobnumber==""){
+			$database->newRecord($db_table_jobfile, $values);
+		}
+		else {
+			$filter = '`jobnumber` = '. $jobnumber; //goes in the WHERE of an SQL query
+			$database->updateRecord($db_table_jobfile, $values, $filter);
+		}
+		
+				//write log
+					//$details="jn:$jobnumber,$date_opened,$customer,$description";
+					//if ($id==""){ $event="Job Entered/Changed";} else { $event="Time Entered";}
+					//write_log_file ($user,$event,$employee,$details);
+		
+		
+		//success message if submit successful
+		include('_msg_successful_submit.php');		
 		die();
-	}
-	 
-	if ($jobnumber==""){
-		$sql = "INSERT INTO $db_table_jobfile (
-		 `description` ,
-		 `location` ,
-		 `customer` ,
-		 `bill_to` ,
-		 `supervisor` ,
-		 `status` ,
-		 `start_date` ,
-		 `end_date` ,
-		 `quote_number` ,
-		 `po_number` ,
-		 `notes` ,
-		 `invoice_number` ,
-		 `contact_name` ,
-		 `contact_number` ,
-		 `opened_by` ,
-		 `date_opened` ,
-		 `date_invoiced` ,
-		 `date_closed`,
-		 `last_modified`,
-		 `require_div`,
-		 `require_subdiv`
-		)
-		VALUES (
-		 '$description',
-		 '$location',
-		 '$customer',
-		 '$bill_to',
-		 '$supervisor',
-		 '$status',
-		 '$start_date',
-		 null,
-		 '$quote_number',
-		 '$po_number',
-		 '$notes',
-		 '$invoice_number',
-		 '$contact_name',
-		 '$contact_number',
-		 '$opened_by',
-		 '$date_opened',
-		 null,
-		 null,
-		 '$last_modified',
-		null,
-		 null
-		)";
-	}
-	else{
-		$sql = "UPDATE $db_table_jobfile 
-		SET  
-		 description	='$description',
-		 location		='$location',
-		 customer		='$customer',
-		 bill_to		='$bill_to',
-		 supervisor		='$supervisor',
-		 status			='$status',
-		 start_date		='$start_date',
-		 end_date		='$end_date',
-		 quote_number	='$quote_number',
-		 po_number		='$po_number',
-		 notes			='$notes',
-		 invoice_number	='$invoice_number',
-		 contact_name	='$contact_name',
-		 contact_number	='$contact_number',
-		 opened_by		='$opened_by',
-		 date_opened	='$date_opened',
-		 date_invoiced	='$date_invoiced',
-		 date_closed	='$date_closed',
-		 last_modified	='$last_modified',
-		 require_div	='$require_div',
-		 require_subdiv	='$require_subdiv'
-		WHERE jobnumber = '$jobnumber'" ;	 
-	}//end else
-	//echo $sql;
-
-	//$retval = $mysql_link->query($sql) or die($mysql_link->error);
-	$database->query($sql);
-	$retval = $mysql_link->query($sql);
-			
-			//write log
-				//$details="jn:$jobnumber,$date_opened,$customer,$description";
-				//if ($id==""){ $event="Job Entered/Changed";} else { $event="Time Entered";}
-				//write_log_file ($user,$event,$employee,$details);
-				
-	echo '<head><meta name="viewport" content="width=device-width, user-scalable=no" /><meta name="HandheldFriendly" content="true"><meta name="MobileOptimized" content="320"></head>';
-	echo "<br><br><b><big>Successfully Submitted</b></big><br><br>";
-	echo 	'<input type="Button" value="Back" onclick="location.href=\'employee_job_view.php\'">';
-	die();
 }//end if submit
 
 ///////////////////////////////////////////////////////////////
@@ -182,58 +102,11 @@ Process Form
 
 if ($edit_record !=""){
 	//read form date 
-	$sql = "SELECT * FROM $db_table_jobfile WHERE jobnumber = $edit_record";
-	$retval = $mysql_link->query($sql);
-
-	//return single value
-	$row = $retval->fetch_assoc();
-
-	$jobnumber 			= $row['jobnumber'];
-	$description 		= $row['description'];
-	$location 			= $row['location'];
-	$customer 			= $row['customer'];
-	$bill_to 			= $row['bill_to'];
-	$supervisor 		= $row['supervisor'];
-	$status 			= $row['status'];
-	$start_date 		= $row['start_date'];
-	$end_date 			= $row['end_date'];
-	$quote_number 		= $row['quote_number'];
-	$po_number 			= $row['po_number'];
-	$notes 				= $row['notes'];
-	$invoice_number 	= $row['invoice_number'];
-	$contact_name		= $row['contact_name'];
-	$contact_number 	= $row['contact_number'];
-	$opened_by 			= $row['opened_by'];
-	$date_opened 		= $row['date_opened'];
-	$date_invoiced 		= $row['date_invoiced'];
-	$date_closed 		= $row['date_closed'];
-	$require_div		= $row['require_div'];
-	$require_subdiv		= $row['require_subdiv'];
+	$filter = 'jobnumber = '. $edit_record;
+	$formObj->setDefaults($Database, $db_table_jobfile, $filter);
+	
 }
-	else{
-	//default form data
-	$jobnumber 		= "";
-	$description 	= "";
-	$location 		= "";
-	$customer 		= "";
-	$bill_to 		= "";
-	$supervisor 	= $user;
-	$status 		= "In Progress";
-	$start_date 	= date("Y-m-d");
-	$end_date 		= "";
-	$quote_number 	= "";
-	$po_number 		= "";
-	$notes 			= "";
-	$invoice_number = "";
-	$contact_name 	= "";
-	$contact_number = "";
-	$opened_by 		= $user;
-	$date_opened 	= date("Y-m-d");
-	$date_invoiced 	= "";
-	$date_closed 	= "";
-	$require_div	= "";
-	$require_subdiv	= "";
-}//END else
+
 
 ?>
 
@@ -246,7 +119,7 @@ if ($edit_record !=""){
 -->
 <html>
 	<head>
-		<title><? echo $company_name?></title>
+		<title><?php echo $company_name?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="description" content="<? echo $company_description ?>" />
 		<meta name="keywords" content="<? echo $company_keywords ?>" />

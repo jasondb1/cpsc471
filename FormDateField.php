@@ -9,12 +9,14 @@ require_once("FormField.php");
  * 
  */
 
-class FormTextBox extends FormField{
+class FormDateField extends FormField{
+    
+    //type can be text,textbox, checkbox,radio, pulldown, date, hidden
     
     private $validationString;
 
-    private $cols = 10;
-    private $rows = 4;
+    private $size = 30;
+    private $id_type = 'datepicker1'; //must have a js associated with id to work
     
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -32,8 +34,10 @@ class FormTextBox extends FormField{
     function __construct($colName, $displayName, $defaultValue = ""){
         $this->columnName = $colName;
         $this->displayName = $displayName;
-        $this->type = "textbox";
-        $this->defaultValue = $defaultValue;
+        $this->type = "date";
+        if ($defaultValue = "") {
+            $this->defaultValue = date("Y-m-d");
+        }
     }
     
 ////////////////////////////////////////////////////////////////////////////
@@ -49,14 +53,13 @@ class FormTextBox extends FormField{
 
     public function toHtml(){
         $html = '<label>';
-        if ($this->isRequired) {$html .= "*";} 
+        if ($this->isRequired) {$html .= "*";}
         $html .= $this->displayName. ':</label>';
-        $html .= '<textarea class="text" cols="'. $this->cols .'" rows="'. $this->rows . '" name="'. $this->columnName .'" />';
-        $html .= $this->defaultValue;
-        $html .= '</textarea>';
+        $html .= '<input id="'. $this->id_type  .'" class="text" size="'. $this->size .'" name="'. $this->columnName .'" value="'. $this->defaultValue .'" readonly="readonly" />';
         
         return $html;
     }
+    
     
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -75,7 +78,6 @@ class FormTextBox extends FormField{
             if( preg_match($this->validationString, $string)) {
                 $validated = true;
             }
-            
         return $validated;
     }
     
@@ -96,18 +98,18 @@ class FormTextBox extends FormField{
     
 ////////////////////////////////////////////////////////////////////////////
 //
-// setSize
+// setIDType
 //
-// set the size of the text box
+// Sets the validation criteria for this field
 //
-// Param:   $rows - the number of rows
-//          $cols - the number of columns
+// Param:   $string - sets the id for the date - to work correctly this
+//                    must hava a valid javascript associated with it
 //
 // Return:  none
 //
-    public function setSize($rows, $cols){
-        $this->rows = $rows;
-        $this->cols = $cols;
+
+    public function setIDType($string){
+        $this->idType = $string;
     }
     
 }

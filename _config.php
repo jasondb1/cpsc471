@@ -1,4 +1,11 @@
 <?php
+////////////////////////////////////////////////////////////////////////////
+//
+// _config.php
+//
+// Default values used for the website and database
+//
+
 require_once("phpauthent/phpauthent_core.php");
 require_once("phpauthent/phpauthent_config.php");	
 date_default_timezone_set('America/Edmonton');
@@ -26,6 +33,7 @@ date_default_timezone_set('America/Edmonton');
 	$dbname		= "cpsc471"; 	// Change this to the proper DB Name
 	
 //jobfile database data
+	$db_table_customer				= "Customers";
 	$db_table_jobfile 				= "jobdata";
 	$db_employee					= "phpauthent_users";
 	$db_customer 					= "customer";
@@ -48,7 +56,8 @@ date_default_timezone_set('America/Edmonton');
 	
 //file settings
 	$global_path			= '/files/';
-	$logfile 				= "log.txt";
+
+
 //email addresses
 	$email_office 			= "office@testcompany.ca";
 	$email_service 			= "service@testcompany.ca";
@@ -61,9 +70,6 @@ date_default_timezone_set('America/Edmonton');
 	$email_other1			=	"";
 	$email_other2			=	"";
 	$email_other3			=	"";
-	
-	$snow_job_number = '01005';
-
 
 //Other
 // $permanent_jobs = array (
