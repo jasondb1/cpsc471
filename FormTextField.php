@@ -52,7 +52,13 @@ class FormTextField extends FormField{
         $html .= $this->displayName. ':</label>';
         
         //TODO: add readonly parameter
-        $html .= '<input class="text" type="'. $this->type    .'" size="'. $this->size .'" name="'. $this->columnName .'" value="'. $this->defaultValue .'"  />';
+        $html .= '<input class="text" type="'. $this->type    .'" size="'. $this->size .
+        '" name="'. $this->columnName .'" value="'. $this->defaultValue .'" '; 
+        $html .= 'placeholder="'. $this->displayName    .'" ';
+        if ($this->readOnly){
+            $html .=  'readonly="readonly"';
+        }
+        $html .= '/>';
         return $html;
     }
     

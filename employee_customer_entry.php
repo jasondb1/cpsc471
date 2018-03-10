@@ -40,6 +40,7 @@ Variables
 	
 	// general format of Formelements is (column in table, label)
 	$fCustomerID   	= new FormTextField ("CustomerID", "Customer ID");
+	$fCustomerID->setReadOnly();
 	$fCFname		= new FormTextField ("CFname", "First Name");
 	$fCLname		= new FormTextField ("CLname", "Last Name");
 	$fStreet		= new FormTextField ("Street", "Street");
@@ -83,18 +84,12 @@ Process Form
 		 
 		//Write Records to database or edit records 
 		if ($values['CustomerID'] == ""){
-			$database->newRecord($db_table_customer, $values);
+			$database->newRecord($db_table_customers, $values);
 		}
 		else {
 			$filter = '`CustomerID` = '. $values['CustomerID']; //goes in the WHERE of an SQL query
-			$database->updateRecord($db_table_customer, $values, $filter);
-		}
-		
-				//write log
-					//$details="jn:$jobnumber,$date_opened,$customer,$description";
-					//if ($id==""){ $event="Job Entered/Changed";} else { $event="Time Entered";}
-					//write_log_file ($user,$event,$employee,$details);
-		
+			$database->updateRecord($db_table_customers, $values, $filter);
+		}	
 		
 		//success message if submit successful
 		echo $formObj->successHtml();		
@@ -110,8 +105,8 @@ Edit Existing Record
 	if ($edit_record !=""){
 		//read form date 
 		$filter = '`CustomerID` = '. $edit_record;
-		$formObj->setDefaults($Database, $db_table_customer, $filter);
-		
+		$formObj->setDefaults($database, $db_table_customers, $filter);
+		$formHtml = $formObj->htmlForm($fields);
 	}
 
 ?>
@@ -220,10 +215,14 @@ Edit Existing Record
 				</div>
 			</div>
 		<!-- /Main -->
+		<!-- Footer -->
+			<footer id="footer" class="container">
 				<!-- Copyright -->
-					<div id="copyright">
-						&copy; <?php echo $company_name; ?> | Template: <a href="http://html5up.net/">HTML5 UP</a>
-					</div>
+				<div id="copyright">
+					&copy; <?php echo $company_name; ?> | Template: <a href="http://html5up.net/">HTML5 UP</a>
+				</div>
 				<!-- /Copyright -->
+			</footer>
+		<!-- /Footer -->
 	</body>
 </html>

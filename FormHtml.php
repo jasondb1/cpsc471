@@ -93,8 +93,8 @@ class FormHtml {
     private function toHtml($fieldList){
         $html = "";
         foreach($fieldList as $field){
-            //var_dump($field);
             $html .= $field->toHtml();
+            $html .= "\n";
         }
         return $html;
     }
@@ -171,15 +171,19 @@ class FormHtml {
 //
     public function setDefaults($database, $table, $filter){
         
-        $sql = "SELECT * FROM $db_table_jobfile WHERE jobnumber = $edit_record";
+        $sql = "SELECT * FROM $table WHERE $filter";
         $retval = $database->query($sql);
 
         //return should be only a single row of values
         $row = $retval->fetch_assoc();
         
+
         foreach($this->fields as $field){
-            $field->setDefaultValue($row[$field]);
+            $colName = $field->getColumnName();
+            echo $colName;
+            $field->setDefaultValue($row[$colName]);
         }
+//var_dump($this->fields);
     }
    
 ////////////////////////////////////////////////////////////////////////////
@@ -196,7 +200,7 @@ class FormHtml {
     public function successHtml(){
     $html = '<head><meta name="viewport" content="width=device-width, user-scalable=no" /><meta name="HandheldFriendly" content="true"><meta name="MobileOptimized" content="320"></head>';
     $html .=  "<br><br><b><big>Successfully Submitted</b></big><br><br>";
-    $html .= '<input type="Button" value="Back" onclick="location.href=\''. $this->successPage  .'\'">';
+    $html .= '<input type="Button" value="Back" onclick="location.href=\''. $this->successPage  .'\'">'. "\n";
     
     return $html;
    }
@@ -215,7 +219,7 @@ class FormHtml {
     public function failureHtml(){
 		$html =  '<head><meta name="viewport" content="width=device-width, user-scalable=no" /><meta name="HandheldFriendly" content="true"><meta name="MobileOptimized" content="320"></head>';
 		$html .= "<br><br><b><big>Hey! You forgot some information!</b></big><br>Fill in all of the fields marked with an *<br><br>";
-		$html .= '<input type="Button" value="Back" onclick="history.go(-1)">';
+		$html .= '<input type="Button" value="Back" onclick="history.go(-1)">'. "\n";
     
     return $html;
    }

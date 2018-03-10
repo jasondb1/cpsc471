@@ -55,7 +55,9 @@ class FormDateField extends FormField{
         $html = '<label>';
         if ($this->isRequired) {$html .= "*";}
         $html .= $this->displayName. ':</label>';
-        $html .= '<input id="'. $this->id_type  .'" class="text" size="'. $this->size .'" name="'. $this->columnName .'" value="'. $this->defaultValue .'" readonly="readonly" />';
+        $html .= '<input id="'. $this->id_type  .'" class="text" size="'. $this->size .
+                '" name="'. $this->columnName .'" value="'. $this->defaultValue .
+                '" readonly="readonly" />';
         
         return $html;
     }

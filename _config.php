@@ -33,7 +33,7 @@ date_default_timezone_set('America/Edmonton');
 	$dbname		= "cpsc471"; 	// Change this to the proper DB Name
 	
 //jobfile database data
-	$db_table_customer				= "Customers";
+	$db_table_customers				= "Customers";
 	$db_table_jobfile 				= "jobdata";
 	$db_employee					= "phpauthent_users";
 	$db_customer 					= "customer";

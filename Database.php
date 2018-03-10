@@ -117,19 +117,17 @@ class Database {
 // Param:   $table - the table to perform a delete
 //          $filter - criteria used by the "WHERE" keyword in sql query
 //
-// Return:  none
+// Return:  html code stating record was deleted
 // 
 
     public function deleteRecord($table, $filter){
-        //$this->opendb();
+        $this->opendb();
             
-           $this->mysql_link->query("DELETE FROM $db_table WHERE uid='$delete_record'");  
-         //write log
-         //   $details="jn:$jobnumber,$date,$delete_record";
-            // write_log_file ($user,'Job Delete',$employee,$details);
-        $html= '<head><meta name="viewport" content="width=device-width, user-scalable=no" /><meta name="HandheldFriendly" content="true"><meta name="MobileOptimized" content="320"></head>';
-        $html= "<br><br><b><big>Successfully Deleted</b></big><br><br>";
-        $html= 	'<input type="Button" value="Back" onclick="location.href=\''.$_SERVER['PHP_SELF']  .'?j='.$masked_jobnumber  .'\'">';
+        $this->query("DELETE FROM $table WHERE $filter");  
+
+        $html   = '<head><meta name="viewport" content="width=device-width, user-scalable=no" /><meta name="HandheldFriendly" content="true"><meta name="MobileOptimized" content="320"></head>';
+        $html   .= "<br><br><b><big>Successfully Deleted</b></big><br><br>";
+        $html   .= '<input type="Button" value="Back" onclick="location.href=\''.$_SERVER['PHP_SELF']  .'?j='.$masked_jobnumber  .'\'">';
     
         return $html;
     }
@@ -245,6 +243,30 @@ class Database {
         
         $retval = $this->mysql_link->query($sql) or die($this->mysql_link->error);
         return $retval;
+    }
+    
+////////////////////////////////////////////////////////////////////////////
+//
+// getPrimaryKey
+//
+// Performs a query either with methodes within the object, or externally
+//
+// Param:   $table - The primary key of the table
+//
+// Return: the column of the primary key
+//
+
+    public function getPrimaryKey($table){
+    
+        $sql = 'SELECT `COLUMN_NAME` FROM `information_schema`.`COLUMNS` 
+        WHERE (`TABLE_SCHEMA` = \''. $this->dbname .'\')  
+        AND (`TABLE_NAME` = \''. $table  .'\')  AND (`COLUMN_KEY` = \'PRI\')';
+        
+        $retval = $this->query($sql);
+
+        $temp = $retval->fetch_row();
+
+        return $temp[0];
     }
 
 ////////////////////////////////////////////////////////////////////////////
