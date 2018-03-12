@@ -271,9 +271,41 @@ class Database {
 
 ////////////////////////////////////////////////////////////////////////////
 //
-// getList //TODO:
+// getList
 //
-// Performs a query either with methodes within the object, or externally
+// Performs a query either with methods within the object, or externally
+//
+// Param:   $table - the table to retrieve values
+//          $column - the column of values to return
+//          $filter - the criteria for selecting records in the 'WHERE' statement
+//          $sort - boolean true or false
+//          $sql - a custom sql query
+//
+// Return: an array of values retrieved from table
+//
+    public function getList($table, $column, $filter = "1", $sort = true, $sql = ""){
+        
+        if ($sql == ""){
+            $sql = "SELECT $column FROM $table WHERE $filter";
+        }
+		$retval = $this->query($sql);
+		
+		while ($row = $retval->fetch_array(MYSQLI_ASSOC)) {
+			$list[]=$row[$column];
+		}
+        if ($sort){
+            sort ($list);
+        }
+        
+		return $list;
+        
+    }
+    
+////////////////////////////////////////////////////////////////////////////
+//
+// getListAssoc
+//
+// Performs a query either with methods within the object, or externally
 //
 // Param:   $table - the table to retrieve values
 //          $column - the column of values to return
@@ -281,8 +313,22 @@ class Database {
 //
 // Return: an array of values retrieved from table
 //
-    public function getList($table, $column, $filter){
-        //convert to sql query
+    public function getListAssoc($table, $valueColumn, $keyColumn, $filter = "1", $sort = true, $sql = ""){
+        
+        if ($sql == ""){
+            $sql = "SELECT $valueColumn, $keyColumn FROM $table WHERE $filter";
+        }
+		$retval = $this->query($sql);
+		
+		while ($row = $retval->fetch_array(MYSQLI_ASSOC)) {
+			$list[$keyColumn]=$row[$valueColumn];
+		}
+        if ($sort){
+            sort ($list);
+        }
+        
+		return $list;
+        
     }
 
 }

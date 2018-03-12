@@ -34,7 +34,7 @@ class FormSelect extends FormField{
         $this->displayName = $displayName;
         $this->options = $options;
         $this->type = "select";
-        $this->defaultValue = $defaultValue;
+        $this->defaultValue = $default;
     }
     
 ////////////////////////////////////////////////////////////////////////////
@@ -51,26 +51,21 @@ class FormSelect extends FormField{
     public function toHtml(){
         $html = '<label>';
         if ($this->isRequired) {$html .= "*";}
-        
-        $html .= $this->displayName. ':</label>';
-        $html .= '<input class="text" type="hidden" name="'. $this->columnName .'" value="'. $this->defaultValue .'"  />';
-        
-        $html = '<label>';
-        if ($this->requireValidation) {$html .= "*";}
         $html .= $this->displayName. ':</label>';
         
         $html .= '<select name="'. $this->columnName  .'">';
         $html .= '<option></option>';
         
-        foreach ($this->options as $value){
+        foreach ($this->options as $display=>$value){
             $html .= '<option';
+            $html .= ' value="'. $value .'" ';
             if ($this->defaultValue == $value){
                 $html .= " selected>";
             } 
             else {
                 $html .= ">";
             }
-            $html .= $value;
+            $html .= $display;
             $html .= '</option>';
         }
         $html .= '</select>';

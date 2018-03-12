@@ -67,13 +67,11 @@
 											<form class="menuLayout" name="layout">
 												<fieldset>
 													<legend>Users</legend>
-													<li><a href="https://192.168.240.10:10000" ><span class="button-menu"><i class="fa fa-cogs fa-fw"></i>&nbsp; Server Administration</span></a></li>
-													<li><a href="http://192.168.220.2" ><span class="button-menu"><i class="fa fa-phone fa-fw"></i>&nbsp; Phone System</span></a></li>
 													<li><a href="phpauthent/phpauthentadmin/" ><span class="button-menu"><i class="fa fa-users fa-fw"></i>&nbsp; Users</span></a></li>
+													<li><a href="phpmyadmin/" ><span class="button-menu"><i class="fa fa-users fa-fw"></i>&nbsp; phpmyadmin</span></a></li>
 												</fieldset>
 												<fieldset>
 													<legend>Other Information</legend>
-													<li><a href="employee_check_banked.php" ><span class="button-menu"><i class="fa fa-database fa-fw"></i>&nbsp; Check Banked Hours</span></a></li>
 													<li><a href="admin_snow_list.php" ><span class="button-menu"><i class="fa fa-database fa-fw"></i>&nbsp; Edit Snow List</span></a></li>
 												</fieldset>
 											</form>

@@ -62,12 +62,13 @@ require('_config.php');
 		<!-- Banner -->
 			<div id="banner-wrapper">
 				<section id="banner">
+					<h2>Group 2 Database Project</h2>
 					<h2><?php $company_name; ?></h2>
-					<span class="byline">[Byline Here]</span>
+					<span class="byline">Sladana Kovacevic, Vishaal Bakshi, Hassan Chaudhry, Jason De Boer</span>
 					<a href="#about" class="button">See What We Offer</a>
 				</section>
 			</div>
-								<a name="about"></a>
+			<a name="about"></a>
 		<!-- /Banner -->
 
 		<!-- Main -->

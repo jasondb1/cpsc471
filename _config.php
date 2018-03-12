@@ -34,12 +34,13 @@ date_default_timezone_set('America/Edmonton');
 	
 //jobfile database data
 	$db_table_customers				= "Customers";
+	$db_purchase_order				= "Purchase_Order";
+		
 	$db_table_jobfile 				= "jobdata";
 	$db_employee					= "phpauthent_users";
 	$db_customer 					= "customer";
 	$db_timelog						= "timelog";
 	$db_workorder					= "workorder";
-	$db_purchase_order				= "purchase_order";
 	$db_purchase_order_items		= "purchase_order_items";
 	$db_snowlog						= "snowlog";
 	$db_changeorder					= "changeorder";
@@ -85,17 +86,33 @@ date_default_timezone_set('America/Edmonton');
 // 01024=>"Cleaning Supplies")
 // ;
 
-$status_list= array(
-"In Progress",
-"Completed",
-"Recurring",
-"On Hold",
-"Pending");
+//For select boxes array(display=>value)
 
-$snow_activity = array (
-"Shoveling/Salting",
-"Machine",
-"Gravel",
-"Truck/Trailer"
-);	
+$status_list= array(
+"In Progress"=>"In Progress",
+"Completed"=>"Completed",
+"Recurring"=>"Recurring",
+"On Hold"=>"On Hold",
+"Pending"=>"Pending");
+
+$terms_list= array(
+"TBD"=>"TBD",
+"Account"=>"Account",
+"Cash"=>"Cash",
+"Credit Card"=>"Credit Card",
+"Net 15"=>"Net 15",
+"Net 30"=>"Net 30",
+"Net 45"=>"Net 45",
+"Net 60"=>"Net 60"
+);
+
+$po_status= array(
+"Ordered"=>"Ordered",
+"Shipped"=>"Shipped",
+"Received"=>"Received",
+"Paid"=>"Paid",
+"Complete"=>"Complete"
+);
+
+	
 ?>

@@ -95,7 +95,8 @@ function getEmployeeNames(){
 		$retval = $mysql_link->query($sql);
 		
 		while ($row = $retval->fetch_array(MYSQLI_ASSOC)) {
-			$employee_list[]=$row['username'];
+			//$employee_list[]=$row['username'];
+			$employee_list[$row['username']]=$row['id'];
 		}
 		sort ($employee_list);
 		return $employee_list;

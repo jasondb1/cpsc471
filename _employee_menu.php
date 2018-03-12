@@ -16,7 +16,7 @@
 -->
 <html>
 	<head>
-		<title><? echo $company_name?></title>
+		<title><?php echo $company_name?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="description" content="<? echo $company_description ?>" />
 		<meta name="keywords" content="<? echo $company_keywords ?>" />
@@ -68,10 +68,16 @@
 											<fieldset>
 											<legend>Time</legend>
 											<li><a href="employee_time_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Timelog</span></a></li>
-											<li><a href="employee_snow_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Snow Log</span></a></li>
 											</fieldset>
+
+											
 											<fieldset>
-											<legend>Job Functions</legend>
+											<legend>Sales</legend>
+											<li><a href="employee_customer_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Customers</span></a></li>
+											</fieldset>
+											
+											<fieldset>
+											<legend>Engineering</legend>
 											<li><a href="employee_job_view.php"><span class="button-menu"><i class="fa fa-database fa-fw"></i>&nbsp; Database</span></a></li>
 											<hr>
 											<li><a href="employee_po_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Purchase Order</span></a></li>
@@ -149,7 +155,7 @@
 
 				<!-- Copyright -->
 					<div id="copyright">
-						&copy; <? echo $company_name; ?> | Template: <a href="http://html5up.net/">HTML5 UP</a>
+						&copy; <?php echo $company_name; ?> | Template: <a href="http://html5up.net/">HTML5 UP</a>
 					</div>
 				<!-- /Copyright -->
 

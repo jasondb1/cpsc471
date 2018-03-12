@@ -32,9 +32,11 @@ Functions
 Variables
 ///////////////////////////////////////////////////////////////////////////////*/
 
+//*CHANGE VALUES IN THIS SECTION
+
 	//get and set initial variables
 	$user 			= trim(getUsername());
-	$pageTitle		= "Customer Data";
+	$pageTitle		= "Purchase Order Entry";
 	
 	$dbtable		= $db_purchase_order;				//used multiple times in other locations
 	$primaryKey		= $database->getPrimaryKey($dbtable);
@@ -42,27 +44,41 @@ Variables
 	//Add Fields
 	
 	// general format of Formelements is (column in table, label)
-	$fCustomerID   	= new FormTextField ("CustomerID", "Customer ID");
-	$fCustomerID->setReadOnly();
-	$fCFname		= new FormTextField ("CFname", "First Name");
-	$fCLname		= new FormTextField ("CLname", "Last Name");
-	$fStreet		= new FormTextField ("Street", "Street");
-	$fCity			= new FormTextField ("City", "City");
-	$fProvince		= new FormTextField ("Province", "Province");
-	$fPostalCode	= new FormTextField ("Postal_Code", "Postal Code");
-	$fCountry		= new FormTextField ("Country", "Country");
-	$fEmail			= new FormTextField ("Email", "Email");
-	$fPhone			= new FormTextField ("Phone", "Phone");
-	$fCompany		= new FormTextField ("CompanyName", "Company");
+	$fPoNumber   	= new FormTextField ("po_number", "PO #");
+	$fPoNumber->setReadOnly();
+	$fStatus		= new FormSelect ("status", "Status", $po_status);
+	$fDateOrdered	= new FormDateField ("date_ordered", "Date Ordered");
+	$fShipDate		= new FormDateField ("est_ship_date", "Est Ship Date");
+	$fAmount		= new FormTextField ("amount", "Amount");
+	$fAcknowledged	= new FormCheckbox ("acknowledged", "Acknowledged");
+	$fRequireQc		= new FormCheckbox ("require_qc", "QC required");
+	
+	//TODO: get vendor list from database from need select list with display=>value
+	$vlist = array("Fake1"=>12345, "Fake2"=>45678);
+	$fVendor		= new FormSelect ("vendor_id", "Vendor", $vlist);
+	
+	$fNotes			= new FormTextBox ("notes", "Notes");
+	$fNotes->setSize(4, 35);
+	
+	$fDescription = new FormTextBox ("description", "Description");
+	
+	$fTerms			= new FormSelect ("payment_terms", "Terms", $terms_list);
+	
+	//TODO: get shipper list from database from need select list with display=>value
+	$slist = array("Ship1"=>12345, "Ship2"=>45678);
+	$fShipper		= new FormSelect ("shipper_id", "Shipper", $slist);
+	
+	$fTracking = new FormTextField ("tracking_no", "Tracking #");
+	$fDescription = new FormHidden ("ordered_by", "Ordered By", $user);
 	
 	//Create form	
 	$formObj = new FormHtml();
-	$formObj->setTitle("Customer Details");
-	$formObj->setSuccessPage('employee_customer_view.php');
+	$formObj->setTitle("PO Details");
+	$formObj->setSuccessPage('employee_po_view.php');
 	
 	//set fields to display in form
-	$fields = array($fCustomerID, $fCFname, $fCLname, $fStreet, $fCity, $fProvince, 
-					$fPostalCode, $fCountry, $fEmail, $fPhone, $fCompany); //this is also the display order (TODO: maybe add groupings ie fieldset tag)
+	$fields = array($fPoNumber, $fVendor, $fStatus, $fDescription, $fDateOrdered, $fShipDate, $fAmount, 
+					$fTerms, $fAcknowledged, $fRequireQc, $fShipper, $fTracking, $fNotes); //this is also the display order (TODO: maybe add groupings ie fieldset tag)
 	$formObj->setFields($fields);
 	
 	//get html code of form
@@ -80,7 +96,9 @@ Process Form
 		$values = $formObj->getData($_POST);
 	
 		//Data Validation - message on error and die 
-		if($values['CFname'] == "" || $values['CLname'] ==""){
+		
+//*CHANGE THESE VALUES AS REQUIRED
+		if($values['amount'] == ""){
 			echo $formObj->failureHtml();		
 			die();
 		}

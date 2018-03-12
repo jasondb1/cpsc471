@@ -35,7 +35,7 @@ class FormDateField extends FormField{
         $this->columnName = $colName;
         $this->displayName = $displayName;
         $this->type = "date";
-        if ($defaultValue = "") {
+        if ($defaultValue == "") {
             $this->defaultValue = date("Y-m-d");
         }
     }
