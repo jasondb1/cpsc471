@@ -13,7 +13,7 @@ require_once('Database.php');
 
 class Table{
 
-    private $DEBUG = false;
+    private $DEBUG = true;
     public $title;
     public $columns;// column format array(array ('columnName'=>'<name>', 'displayName'=>'<disp name>', 'type'=>'<type>')
     public $enableEdit = false; //adds and edit column
@@ -76,15 +76,15 @@ class Table{
     private function dataFromSQL($sql = null){
         //TODO error conditions if no table given/exists, columns, etc
         $this->database->opendb();
-   
+
         if ($sql == null){
             if ($this->orderByCol == ''){
                 $this->orderByCol = $this->columns[0]['columnName'];
             }
             $sql = "SELECT * FROM ". $this->dataTable ." WHERE ". $this->filter . " ORDER BY " . $this->orderByCol. " ". $this->orderDirection . $this->max;
         }
-        
-        if ($DEBUG) {echo $sql;} //var_dump($link);}
+
+        if ($this->DEBUG) {echo $sql;} //var_dump($link);}
         
         $this->queryData = $this->database->getlink()->query($sql);
 

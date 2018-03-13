@@ -18,7 +18,7 @@ Includes
 Page Protection
 ///////////////////////////////////////////////////////////////////////////////*/	
 	$usersArray  = array();
-	$groupsArray = array("admin","supervisor");
+	$groupsArray = array("admin","supervisor");					//***
 	pageProtect($usersArray,$groupsArray);	
 
 /*////////////////////////////////////////////////////////////////////////////////
@@ -34,14 +34,12 @@ Variables
 
 	//get and set initial variables
 	$user 			= trim(getUsername());
-	$pageTitle		= "Customer Data";
+	$page_title		= "Customer Data";							//***
 	
-	$dbtable		= "Customers";				//used multiple times in other locations
+	$dbtable		= "Customers";								//***
 	$primaryKey		= $database->getPrimaryKey($dbtable);
 	
-	//Add Fields
-	
-	// general format of Formelements is (column in table, label)
+	//*** general format of Formelements is (column in table, label, default value)
 	$fCustomerID   	= new FormTextField ("CustomerID", "Customer ID");
 	$fCustomerID->setReadOnly();
 	$fCFname		= new FormTextField ("CFname", "First Name");
@@ -57,15 +55,16 @@ Variables
 	
 	//Create form	
 	$formObj = new FormHtml();
-	$formObj->setTitle("Customer Details");
-	$formObj->setSuccessPage('employee_customer_view.php');
 	
-	//set fields to display in form
+	$formObj->setTitle("Customer Details");						//***
+	$formObj->setSuccessPage('employee_customer_view.php');		//***
+	
+	//*** set fields to display in form
 	$fields = array($fCustomerID, $fCFname, $fCLname, $fStreet, $fCity, $fProvince, 
 					$fPostalCode, $fCountry, $fEmail, $fPhone, $fCompany); //this is also the display order (TODO: maybe add groupings ie fieldset tag)
-	$formObj->setFields($fields);
 	
 	//get html code of form
+	$formObj->setFields($fields);
 	$formHtml = $formObj->htmlForm($fields);
 
 /*////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +79,7 @@ Process Form
 		$values = $formObj->getData($_POST);
 	
 		//Data Validation - message on error and die 
-		if($values['CFname'] == "" || $values['CLname'] ==""){
+		if($values['CFname'] == "" || $values['CLname'] ==""){		//***
 			echo $formObj->failureHtml();		
 			die();
 		}
@@ -122,7 +121,7 @@ Edit Existing Record
 -->
 <html>
 	<head>
-		<title><?php echo $company_name?></title>
+		<title><?php echo $page_title?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="description" content="<? echo $company_description ?>" />
 		<meta name="keywords" content="<? echo $company_keywords ?>" />
@@ -193,7 +192,7 @@ Edit Existing Record
 							<div class="row flush" style="padding:0em; padding-top:2em;">
 								<div class="12u">
 									<header>
-										<h3><?PHP echo $pageTitle?> </h3>
+										<h3><?PHP echo $page_title?> </h3>
 									</header>
 									<div id="menu">
 										<ul>

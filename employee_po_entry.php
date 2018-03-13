@@ -36,15 +36,22 @@ Variables
 
 	//get and set initial variables
 	$user 			= trim(getUsername());
-	$pageTitle		= "Purchase Order Entry";
-	
-	$edit_record 	= $_GET['edit_record'];//this may not be used
-	$remove_item 	= $_GET['remove_item'];
-	$remove_po		= $_GET['remove_po'];
-	$refer_page 	= $_SERVER['HTTP_REFERER'];
+	$page_title		= "Purchase Order Entry";					//***
 	
 	$dbtable		= $db_purchase_order;				//used multiple times in other locations
 	$primaryKey		= $database->getPrimaryKey($dbtable);
+	
+		if (isset($_GET['edit_record'])) {
+			$edit_record 	= $_GET['edit_record'];
+		}
+		if (isset($_GET['remove_item'])) {
+			$edit_record 	= $_GET['remove_item'];				
+		}
+		if (isset($_GET['remove_po'])) {
+			$edit_record 	= $_GET['remove_po'];				//***
+		}
+		$refer_page 	= $_SERVER['HTTP_REFERER'];
+
 	
 /*////////////////////////////////////////////////////////////////////////////////
 Fields
@@ -202,7 +209,7 @@ Edit Existing Record
 -->
 <html>
 	<head>
-		<title><?php echo $company_name;?></title>
+		<title><?php echo $page_title;?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="description" content="<?php echo $company_description ?>" />
 		<meta name="keywords" content="<?php echo $company_keywords ?>" />
@@ -273,7 +280,7 @@ Edit Existing Record
 							<div class="row flush" style="padding:0em; padding-top:2em;">
 								<div class="12u">
 									<header>
-										<h3><?php echo $pageTitle?> </h3>
+										<h3><?php echo $page_title?> </h3>
 									</header>
 									<div id="menu">
 										<ul>

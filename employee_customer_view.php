@@ -20,7 +20,7 @@ Includes
 Page Protection
 ///////////////////////////////////////////////////////////////////////////////*/
 	$usersArray = array("administrator");
-	$groupsArray = array("admin","employee","payroll","supervisor");
+	$groupsArray = array("admin","employee","payroll","supervisor");//***
 	pageProtect($usersArray,$groupsArray);
 
 /*////////////////////////////////////////////////////////////////////////////////
@@ -28,39 +28,39 @@ Variables
 ///////////////////////////////////////////////////////////////////////////////*/	
 	//get and set initial variables
 		$database = new Database($dbhost, $dbname, $dbusername, $dbpass);
-
-		$search = $_GET['search']; 
+		
+		$page_title="View Jobs";									//***
+		
+		$dbtable		= $db_table_customers;						//***
+		$primaryKey		= $database->getPrimaryKey($dbtable);
 
 /*////////////////////////////////////////////////////////////////////////////////
 Set View Options/ filter results of query
 ///////////////////////////////////////////////////////////////////////////////*/		
 		
-		$orderBy = $_GET['sort_by'];
-		$direction = $_GET['direction'];
-		$page_rows = $_COOKIE['page_rows'];
-		//$delete_record = $_GET['delete_record'];		
-
-		//TODO add array of columns to search or add to $columns
-		if ($search != ""){
-			 $where = " CustomerID LIKE '%$search%'
-						OR notes LIKE '%$search%'
-						OR description LIKE '%$search%'
-						OR location LIKE '%$search%'
-						OR supervisor LIKE '%$search%'
-						OR customer LIKE '%$search%'
-						OR bill_to LIKE '%$search%'
-						OR invoice_number LIKE '%$search%'
-			 ";
+		if (isset($_GET['sort_by'])) {
+			$orderBy = $_GET['sort_by'];
+			$direction = $_GET['direction'];
+			$page_rows = $_COOKIE['page_rows'];
+		}
+		else {
+			$orderBy = "";
+			$direction = "";
+			$page_rows = "";
+		}
+		
+		if (isset($_GET['search'])){
+			$search = $_GET['search'];
 		}
 		else{
-			$where =" true";
+			$search = "";
 		}
 
 /*/////////////////////////////////////////////////
 Delete Record
 /////////////////////////////////////////////////*/
 	if ($_GET['delete_record'] != ""){
-		echo $database->deleteRecord($db_table_customers, "CustomerID='". $_GET['delete_record'] ."'");
+		echo $database->deleteRecord($dbtable, "$primaryKey='". $_GET['delete_record'] ."'");
 		die();	
 	}//end if delete
 
@@ -68,10 +68,10 @@ Delete Record
 //Create Table HTML
 /////////////////////////////////////////////////*/
 	
-	//set all of the column information
+	//*** set all of the column information
 	$columns = array(
 		array('columnName'=>'CustomerID', 	'displayName'=>'CID', 			'type'=>'text'),
-		array('columnName'=>'Company', 		'displayName'=>'Company', 		'type'=>'text'),
+		array('columnName'=>'CompanyName',	'displayName'=>'Company', 		'type'=>'text'),
 		array('columnName'=>'CFname', 		'displayName'=>'First Name', 	'type'=>'text'),
 		array('columnName'=>'CLname', 		'displayName'=>'Last Name', 	'type'=>'text'),
 		array('columnName'=>'Email', 		'displayName'=>'Email', 		'type'=>'text'),
@@ -81,21 +81,38 @@ Delete Record
 		array('columnName'=>'Province', 	'displayName'=>'Province', 		'type'=>'text'),
 		array('columnName'=>'Postal_Code', 	'displayName'=>'Postal Code', 	'type'=>'text')
 	);
-	
-	//$page_title="View Jobs";	
-	//Edit or upload page
+
+	//Search Criteria
+	if ($search != ""){
+		$i = 0;
+		foreach ($columns as $row){
+			if ($i == 0){ 
+				$where = " " . $row['columnName'] . " LIKE '%$search%'";
+			}
+			else {
+				$where .= " OR " . $row['columnName'] . " LIKE '%$search%'";
+			}
+			$i++;
+		}	
+	}
+	else{
+		$where =" true"; //default criteria
+	}
+		
+	//new table object
 	$table = new Table();
-	$table->dataTable=$db_table_customers;
-	$table->title="View Customers";
+	$table->dataTable=$dbtable;
 	$table->columns=$columns;
-	$table->enableEdit=true;
-	$table->enableDelete=true;
-	$table->editPage="employee_customer_entry.php";
+	
+	$table->enableEdit=true;								//***
+	$table->enableDelete=true;								//***
+	$table->editPage="employee_customer_entry.php";			//***
+	
 	$table->orderByCol= $orderBy;
 	$table->orderDirection = $direction;
 	$table->filter = $where;
 	$table->setdb($database);
-	$tableHTML = $table->toHTML();
+	$tableHTML = $table->toHTML();		//gets the actual html code that is used below
 
 ?>
 
@@ -108,7 +125,7 @@ Delete Record
 -->
 <html>
 	<head>
-		<title><?php echo $company_name?></title>
+		<title><?php echo $page_title?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="description" content="<?php echo $company_description ?>" />
 		<meta name="keywords" content="<?php echo $company_keywords ?>" />

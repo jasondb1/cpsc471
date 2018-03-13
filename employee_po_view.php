@@ -20,7 +20,7 @@ Includes
 Page Protection
 ///////////////////////////////////////////////////////////////////////////////*/
 	$usersArray = array("administrator");
-	$groupsArray = array("admin","employee","payroll","supervisor");
+	$groupsArray = array("admin","employee","payroll","supervisor");	//***
 	pageProtect($usersArray,$groupsArray);
 
 /*////////////////////////////////////////////////////////////////////////////////
@@ -28,39 +28,39 @@ Variables
 ///////////////////////////////////////////////////////////////////////////////*/	
 	//get and set initial variables
 		$database = new Database($dbhost, $dbname, $dbusername, $dbpass);
-
-		$search = $_GET['search']; 
+		
+		$page_title="View Jobs";									//***
+		
+		$dbtable		= $db_purchase_order;						//***
+		$primaryKey		= $database->getPrimaryKey($dbtable);
 
 /*////////////////////////////////////////////////////////////////////////////////
 Set View Options/ filter results of query
 ///////////////////////////////////////////////////////////////////////////////*/		
 		
+	if (isset($_GET['sort_by'])) {
 		$orderBy = $_GET['sort_by'];
 		$direction = $_GET['direction'];
 		$page_rows = $_COOKIE['page_rows'];
-		//$delete_record = $_GET['delete_record'];		
-
-		//TODO add array of columns to search or add to $columns
-		if ($search != ""){
-			 $where = " po_number LIKE '%$search%'
-						OR notes LIKE '%$search%'
-						OR description LIKE '%$search%'
-						OR location LIKE '%$search%'
-						OR supervisor LIKE '%$search%'
-						OR customer LIKE '%$search%'
-						OR bill_to LIKE '%$search%'
-						OR invoice_number LIKE '%$search%'
-			 ";
-		}
-		else{
-			$where =" true";
-		}
+	}
+	else {
+		$orderBy = "";
+		$direction = "";
+		$page_rows = "";
+	}
+	
+	if (isset($_GET['search'])){
+		$search = $_GET['search'];
+	}
+	else{
+		$search = "";
+	}		
 
 /*/////////////////////////////////////////////////
 Delete Record
 /////////////////////////////////////////////////*/
 	if ($_GET['delete_record'] != ""){
-		echo $database->deleteRecord($db_purchase_order, "po_number='". $_GET['delete_record'] ."'");
+		echo $database->deleteRecord($dbtable, "$primaryKey='". $_GET['delete_record'] ."'");
 		die();	
 	}//end if delete
 
@@ -68,8 +68,8 @@ Delete Record
 //Create Table HTML
 /////////////////////////////////////////////////*/
 	
-	//set all of the column information
-	$columns = array(
+	//*** set all of the column information    
+	$columns = array(                     
 		array('columnName'=>'po_number', 		'displayName'=>'PO Number', 			'type'=>'text'),
 		array('columnName'=>'status', 			'displayName'=>'Status', 		'type'=>'text'),
 		array('columnName'=>'date_ordered', 	'displayName'=>'Order Date', 	'type'=>'text'),
@@ -80,15 +80,33 @@ Delete Record
 		array('columnName'=>'vendor_id', 		'displayName'=>'Vendor', 			'type'=>'text')
 	);
 	
-	//$page_title="View Jobs";	
+	//Search Criteria
+	if ($search != ""){
+		$i = 0;
+		foreach ($columns as $row){
+			if ($i == 0){ 
+				$where = " " . $row['columnName'] . " LIKE '%$search%'";
+			}
+			else {
+				$where .= " OR " . $row['columnName'] . " LIKE '%$search%'";
+			}
+			$i++;
+		}	
+	}
+	else{
+		$where =" true"; //default criteria
+	}
+	
 	//Edit or upload page
 	$table = new Table();
-	$table->dataTable=$db_purchase_order;
-	$table->title="Purchase Orders";
+	$table->dataTable=$dbtable;
 	$table->columns=$columns;
-	$table->enableEdit=true;
-	$table->enableDelete=true;
-	$table->editPage="employee_po_entry.php";
+	
+	$table->title="Purchase Orders";					//***
+	$table->enableEdit=true;							//***
+	$table->enableDelete=true;							//***
+	$table->editPage="employee_po_entry.php";			//***
+	
 	$table->orderByCol= $orderBy;
 	$table->orderDirection = $direction;
 	$table->filter = $where;
@@ -106,7 +124,7 @@ Delete Record
 -->
 <html>
 	<head>
-		<title><?php echo $company_name?></title>
+		<title><?php echo $page_title?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="description" content="<?php echo $company_description ?>" />
 		<meta name="keywords" content="<?php echo $company_keywords ?>" />
