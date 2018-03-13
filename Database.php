@@ -321,7 +321,7 @@ class Database {
 		$retval = $this->query($sql);
 		
 		while ($row = $retval->fetch_array(MYSQLI_ASSOC)) {
-			$list[$keyColumn]=$row[$valueColumn];
+        $list[$keyColumn]=$row[$valueColumn];
 		}
         if ($sort){
             sort ($list);

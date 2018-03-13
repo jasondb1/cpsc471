@@ -70,6 +70,21 @@ class FormField{
     
 ////////////////////////////////////////////////////////////////////////////
 //
+// getDefaultValue
+//
+// Sets the default value for the field
+//
+// Param:   none
+//
+// Return:  the default value to set
+//
+
+    public function getDefaultValue(){
+        return $this->defaultValue;
+    }
+    
+////////////////////////////////////////////////////////////////////////////
+//
 // getColumnName
 //
 // Sets the default value for the field

@@ -35,25 +35,8 @@ date_default_timezone_set('America/Edmonton');
 //jobfile database data
 	$db_table_customers				= "Customers";
 	$db_purchase_order				= "Purchase_Order";
-		
-	$db_table_jobfile 				= "jobdata";
-	$db_employee					= "phpauthent_users";
-	$db_customer 					= "customer";
-	$db_timelog						= "timelog";
-	$db_workorder					= "workorder";
-	$db_purchase_order_items		= "purchase_order_items";
-	$db_snowlog						= "snowlog";
-	$db_changeorder					= "changeorder";
-	$db_changeorder_items			= "changeorder_items";
-	$db_quote						= "quote";
-	$db_quote_items					= "quote_items";
-	$db_request_for_information 	= "request_for_information";
-	$db_folder_access 				= "folder_access";
-	$db_equipment					= "equipment";
-	$db_equipment_log				= "equipment_log";
-	$db_equipment_temp				= "equipment_temp";
-
-	$company_databases = array('jobdata'=>'Test Company');
+	$db_purchase_order_items		= "PO_Components";
+	
 	
 //file settings
 	$global_path			= '/files/';

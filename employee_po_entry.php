@@ -38,10 +38,17 @@ Variables
 	$user 			= trim(getUsername());
 	$pageTitle		= "Purchase Order Entry";
 	
+	$edit_record 	= $_GET['edit_record'];//this may not be used
+	$remove_item 	= $_GET['remove_item'];
+	$remove_po		= $_GET['remove_po'];
+	$refer_page 	= $_SERVER['HTTP_REFERER'];
+	
 	$dbtable		= $db_purchase_order;				//used multiple times in other locations
 	$primaryKey		= $database->getPrimaryKey($dbtable);
 	
-	//Add Fields
+/*////////////////////////////////////////////////////////////////////////////////
+Fields
+///////////////////////////////////////////////////////////////////////////////*/
 	
 	// general format of Formelements is (column in table, label)
 	$fPoNumber   	= new FormTextField ("po_number", "PO #");
@@ -81,6 +88,21 @@ Variables
 					$fTerms, $fAcknowledged, $fRequireQc, $fShipper, $fTracking, $fNotes); //this is also the display order (TODO: maybe add groupings ie fieldset tag)
 	$formObj->setFields($fields);
 	
+/*////////////////////////////////////////////////////////////////////////////////
+Items
+///////////////////////////////////////////////////////////////////////////////*/	
+	
+	//sets the fields for the individual items
+	//Note [] is necessary for item fields to get input as an array
+	$iQty		= new FormTextField ("Quantity[]", "Qty");
+	$iPrice 	= new FormTextField ("UnitCost[]", "Unit Cost");
+	$iDescription= new FormTextField ("Description[]", "Description");
+	$iPart      = new FormTextField ("Part_No[]", "Part Numnber");
+
+	$ifields = array($iQty, $iPrice, $iDescription, $iPart);
+
+	$formObj->setItemFields($ifields);
+	
 	//get html code of form
 	$formHtml = $formObj->htmlForm($fields);
 
@@ -111,7 +133,35 @@ Process Form
 		else {
 			$filter = '`'. $primaryKey . '` = '. $values[$primaryKey]; //goes in the WHERE of an SQL query
 			$database->updateRecord($dbtable, $values, $filter);
-		}	
+		}
+		
+		//write item data.
+		$po_number = $values['po_number'];
+		$part_no   = $values['part_no'];
+		$quantity  = $values['Quantity'];
+		$sql = "DELETE FROM $db_purchase_order_items WHERE po_number='$po_number';";
+		$retval = $database->query($sql);
+		$i=0;
+			while($i<count($part_no))
+			{
+			
+				$sql = "INSERT INTO $db_purchase_order_items (
+				 `po_number` ,
+				 `part_no` ,
+				 `Quantity`,
+				 `UnitCost`
+				)
+				VALUES (
+				 '$po_number',
+				 '$part_no[$i]',
+				 '$Quantity[$i]',
+				 '$UnitCost[$i]'
+				);";
+	
+				$retval = $database->query($sql);
+				  $i++;
+			}//end while
+			
 		
 		//success message if submit successful
 		echo $formObj->successHtml();		
@@ -130,6 +180,18 @@ Edit Existing Record
 		$formObj->setDefaults($database, $dbtable, $filter);
 		$formHtml = $formObj->htmlForm($fields);
 	}
+	
+	//get data for items
+	//descriptions and details
+	//read form date 
+	$po_number = $fPoNumber->getDefaultValue();
+	$sql = "SELECT * FROM $db_purchase_order_items WHERE `po_number` = '$po_number'";
+	$retval = $database->query($sql);
+		  while($row = $retval->fetch_assoc()){
+		    $part_no[]		= $row['part_no'];
+			$Quantity[]		= $row['quantity'];
+			$UnitCost[]		= $row['UnitCost'];
+		  }//end while
 
 ?>
 <!DOCTYPE HTML>
@@ -140,10 +202,10 @@ Edit Existing Record
 -->
 <html>
 	<head>
-		<title><?php echo $company_name?></title>
+		<title><?php echo $company_name;?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		<meta name="description" content="<? echo $company_description ?>" />
-		<meta name="keywords" content="<? echo $company_keywords ?>" />
+		<meta name="description" content="<?php echo $company_description ?>" />
+		<meta name="keywords" content="<?php echo $company_keywords ?>" />
 		<link href="http://fonts.googleapis.com/css?family=Open+Sans:400,700|Open+Sans+Condensed:700" rel="stylesheet" />
 		<script src="js/jquery.min.js"></script>
 		<script src="js/config.js"></script>
@@ -174,7 +236,7 @@ Edit Existing Record
 					}
 				);
 			});
-		</script>
+		</script>	
 		<style type="text/css">
 		  #datepicker1, #timepicker1, #timepicker2{
 			background-position:right center;
@@ -211,11 +273,11 @@ Edit Existing Record
 							<div class="row flush" style="padding:0em; padding-top:2em;">
 								<div class="12u">
 									<header>
-										<h3><?PHP echo $pageTitle?> </h3>
+										<h3><?php echo $pageTitle?> </h3>
 									</header>
 									<div id="menu">
 										<ul>
-										<li><a href="employee_customer_view.php" ><span class="button-menu"><i class="fa fa-arrow-circle-o-left fa-fw"></i>&nbsp; View Customer Database</span></a></li>
+										<li><a href="employee_po_view.php" ><span class="button-menu"><i class="fa fa-arrow-circle-o-left fa-fw"></i>&nbsp; View Purchase Orders</span></a></li>
 										</ul>
 									</div>
 								</div>

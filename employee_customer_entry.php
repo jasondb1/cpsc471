@@ -36,7 +36,7 @@ Variables
 	$user 			= trim(getUsername());
 	$pageTitle		= "Customer Data";
 	
-	$dbtable		= $db_purchase_order;				//used multiple times in other locations
+	$dbtable		= "Customers";				//used multiple times in other locations
 	$primaryKey		= $database->getPrimaryKey($dbtable);
 	
 	//Add Fields
