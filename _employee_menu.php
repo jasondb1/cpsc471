@@ -66,44 +66,37 @@
 
 											<form class="menuLayout" name="layout">
 											<fieldset>
-											<legend>Time</legend>
+											<legend>Employee Time</legend>
 											<li><a href="employee_time_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Timelog</span></a></li>
 											</fieldset>
 
 											
 											<fieldset>
 											<legend>Sales</legend>
+											<li><a href="employee_fixtures_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Fixtures</span></a></li>
+											<li><a href="employee_sales_order_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Sales Order</span></a></li>
+											<li><a href="employee_quote_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Quotes</span></a></li>
+											<hr>
 											<li><a href="employee_customer_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Customers</span></a></li>
 											</fieldset>
 											
 											<fieldset>
 											<legend>Engineering</legend>
-											<li><a href="employee_job_view.php"><span class="button-menu"><i class="fa fa-database fa-fw"></i>&nbsp; Database</span></a></li>
-											<hr>
-											<li><a href="employee_po_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Purchase Order</span></a></li>
-											<!--<li><a href="employee_change_order_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Change Orders</span></a></li>-->
-											<li><a href="employee_workorder_select_job.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Work Orders</span></a></li>
-											<!--<li><a href="employee_quote_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Quotes</span></a></li>-->
-											<!--<li><a href="employee_rfi_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; RFI View</span></a></li>-->
-											<li><a href="employee_invoice_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Vendor Invoices</span></a></li>
-											<!--<li><a href="protected_folder_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Drawings and Reference</span></a></li>-->
+
+											<li><a href="employee_components_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Components</span></a></li>
+											<li><a href="employee_project_view.php"><span class="button-menu"><i class="fa fa-database fa-fw"></i>&nbsp; Projects</span></a></li>
 											</fieldset>
 											
 											<fieldset>
-											<legend>Safety Menu</legend>
-											<li><a href="_safety_menu.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Safety Menu</span></a></li>
+											<legend>Purchasing</legend>
+											<li><a href="employee_po_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Purchase Order</span></a></li>
+											<hr>
+											<li><a href="employee_shipper_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Shippers</span></a></li>
+											<li><a href="employee_vendor_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Vendors</span></a></li>
 											</fieldset>
 											<!--<fieldset>
 											<legend>Safety</legend>
-											<li><a href="safety_file_explorer.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Safety Files</span></a></li>
-											<li><a href="employee_hazard_snow.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Snow Hazard Analysis - Hand Shovelling</span></a></li>
-											<li><a href="employee_hazard_snow_machine.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Snow Hazard Analysis - Machine Operator</span></a></li>
-											</fieldset>-->
-											<!--<fieldset>
-											<legend>Admin</legend>
-											<li><a href="employee_menu_administration.php" ><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Administration Menu >>></span></a></li>
-											<li><a href="file_explorer.php" ><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Document Explorer</span></a></li>
-											<li><a href="m_employee_vacation_request.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Vacation Request</span></a></li>
+
 											</fieldset>-->
 											</form>
 

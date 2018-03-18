@@ -37,6 +37,8 @@ date_default_timezone_set('America/Edmonton');
 	$db_purchase_order				= "Purchase_Order";
 	$db_purchase_order_items		= "PO_Components";
 	
+	$db_table_tem					= "temp";
+	
 	
 //file settings
 	$global_path			= '/files/';

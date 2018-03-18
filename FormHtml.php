@@ -22,9 +22,9 @@ class FormHtml {
 
     private $title = "title";
     private $formName = "formname";
-    private $a_groups; //not currentlyused
-    private $itemFields; //for items
-    private $fields;    //for regular fields
+    private $groups;        //array of group names
+    private $itemFields;    //for items
+    private $fields;        //for regular fields
     private $data;
     private $database;
     private $successPage;
