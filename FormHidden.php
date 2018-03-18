@@ -47,10 +47,7 @@ class FormHidden extends FormField{
 //
 
     public function toHtml(){
-        $html = '<label>';
-        if ($this->requireValidation) {$html .= "*";}
-        $html .= $this->displayName. ':</label>';
-        $html .= '<input class="text" type="hidden" name="'. $this->columnName .'" value="'. $this->defaultValue .'"  />';
+        $html = '<input class="text" type="hidden" name="'. $this->columnName .'" value="'. $this->defaultValue .'"  />';
         
         return $html;
     }

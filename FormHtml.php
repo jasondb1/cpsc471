@@ -24,6 +24,7 @@ class FormHtml {
     private $formName = "formname";
     private $groups;        //array of group names
     private $itemFields;    //for items
+    private $editItems;
     private $fields;        //for regular fields
     private $data;
     private $database;
@@ -47,16 +48,18 @@ class FormHtml {
 // Return: a string of html that contains the form code
 //
     
-    public function htmlForm(){
+    public function htmlForm($edit = false){
         $html = '<form method="post" action="' .$_SERVER['PHP_SELF'] .'" name="'. $this->formName . '">';
         $html .= '<input class="submit" type="submit" name="submit" value="Submit"/>&nbsp;';
 		$html .= '<input class="submit" type="submit" name="submit" value="Cancel" onclick="document.'. $this->formName . '.action=' .$_SERVER['PHP_SELF'] .';"/>&nbsp;';
         $html .= '<br>';
-        $html .= '<fieldset>';
-        $html .= '<legend>'. $this->title .'</legend>';
-        $html .= $this->fieldsToHtml($this->fields);
-        $html .= '</fieldset>';
-        
+        foreach ($this->groups as $name=>$fields){
+            $html .= '<fieldset>';
+            $html .= '<legend>'. $name .'</legend>';
+            $html .= $this->fieldsToHtml($fields);
+            $html .= '</fieldset>';
+        }
+
         if ($this->hasItems){
             $html .= $this->htmlItemFields();
         }
@@ -118,25 +121,39 @@ class FormHtml {
 // Return: html code for all of the item fields in the form
 //    
     
-    public function htmlItemFields($iFieldList = ""){
+    
+//TODO: modify this function to do edit better
+//maybe make $iFieldList/$itemFields to array(array(field1, field2, field3), array(field1, field2, field3))
+    public function htmlItemFields($iFieldList = "", $getDefaults = false){
         
         if ($iFieldList == ""){
             $iFieldList = $this->itemFields;
         }
         
+        
+        if ($getDefaults == true){
+            
+            //get number of items
+        }
+        
         $i=0;
         $var_count = count($iFieldList[0]->getColumnName());
         if ($var_count<1){$var_count=1;}    //make sure at least one item shows up on new po
+            
+            
+            
             while($i<$var_count)
             {
                 $htmlItemFields =  '<b>Item '. ($i + 1)  .'</b><br>';
                 $htmlItemFields .= '<div id="form_data">';
+//TODO:default value  
                 $htmlItemFields .= $this->fieldsToHtml($iFieldList);
                 $htmlItemFields .= '<div style="clear:both;"></div>';
                 $htmlItemFields .= '</div>';
                 
                 // //add delete if >1 items
-                if ($i>0 || $var_count>1){
+                //if ($i>0 || $var_count>1){
+                if ($this->editItems !=""){//This was a bit of hack to allow this
                     //echo '<a style="float:right;" href="'. $_SERVER['PHP_SELF']  .'?remove_item='.$item_id[$i] . '&id='. $id  .'">Remove<img src="images/delete.png" /></a>';
                     $htmlItemFields .= '<a style="float:right;" href="'. $_SERVER['PHP_SELF']  .'?remove_item='.$item_id[$i] . '&id='. $id  .'&refer_page='.$refer_page.'"><img src="images/remove.png" />Remove Item</a>';
                     }
@@ -220,6 +237,30 @@ class FormHtml {
     
 ////////////////////////////////////////////////////////////////////////////
 //
+// setGroups
+//
+// sets the group objects contained within the form
+//
+// Param: $groups - an array of field objects for the form
+//
+// Return: none
+//
+
+    public function setGroups($groups){
+        $this->groups = $groups;
+        $allFields = array();
+        
+        //enter them into fields for this array for other functions
+        foreach ($this->groups as $name=>$fields){
+            $allFields = array_merge($allFields, $fields);
+        }
+                
+    $this->setfields($allFields);
+
+    }
+    
+////////////////////////////////////////////////////////////////////////////
+//
 // setItemFields
 //
 // sets the field objects contained within the form
@@ -263,6 +304,21 @@ class FormHtml {
 
     public function setTitle($name){
         $this->title = $name;
+    }
+
+////////////////////////////////////////////////////////////////////////////
+//
+// setEditCount
+//
+// Sets the title for the form
+//
+// Param: $name - the title
+//
+// Return: none
+//
+
+    public function setEditCount($count){
+        $this->editItems = $count;
     }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -42,7 +42,7 @@ Variables
 	//*** general format of Formelements is (column in table, label, default value)
 	$fId   	= new FormTextField ("id", "Temp ID");
 	$fId->setReadOnly();
-	$fItems		= new FormTextField ("items", "Items");
+	$fItems	= new FormTextField ("items", "Items");
 	
 	//Create form	
 	$formObj = new FormHtml();
@@ -50,12 +50,14 @@ Variables
 	$formObj->setTitle("Template Item Details");						//***
 	$formObj->setSuccessPage('employee_template_view.php');				//***
 	
-	//*** set fields to display in form
-	$fields = array($fId, $fitems); //this is also the display order (TODO: maybe add groupings ie fieldset tag)
+	//*** set fields and groups to display in form
+	$group_1 = array($fId);
+	$group_2 = array($fItems);
+	$groups = array('Group 1'=>$group_1, 'Group 2'=>$group_2);	//Groups are array(Name=>array(fields))
 	
 	//get html code of form
-	$formObj->setFields($fields);
-	$formHtml = $formObj->htmlForm($fields);
+	$formObj->setGroups($groups);
+	$formHtml = $formObj->htmlForm();
 
 /*////////////////////////////////////////////////////////////////////////////////
 Process Form

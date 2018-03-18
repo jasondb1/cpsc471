@@ -70,8 +70,8 @@ Delete Record
 	
 	//*** set all of the column information
 	$columns = array(
-		array('columnName'=>'Template ID', 	'displayName'=>'id', 			'type'=>'text'),
-		array('columnName'=>'Item',			'displayName'=>'items', 		'type'=>'text')
+		array('columnName'=>'id', 				'displayName'=>'Template ID', 			'type'=>'text'),
+		array('columnName'=>'items',			'displayName'=>'Items', 				'type'=>'text')
 	);
 
 	//Search Criteria

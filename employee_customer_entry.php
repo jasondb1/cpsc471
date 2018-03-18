@@ -58,13 +58,16 @@ Variables
 	
 	$formObj->setTitle("Customer Details");						//***
 	$formObj->setSuccessPage('employee_customer_view.php');		//***
-	
-	//*** set fields to display in form
-	$fields = array($fCustomerID, $fCFname, $fCLname, $fStreet, $fCity, $fProvince, 
-					$fPostalCode, $fCountry, $fEmail, $fPhone, $fCompany); //this is also the display order (TODO: maybe add groupings ie fieldset tag)
+
+	//*** set fields and groups to display in form
+	$group_1 = array($fCustomerID, $fCFname, $fCLname, $fCompany);
+	$group_2 = array( $fEmail, $fPhone, $fStreet, $fCity, $fProvince, $fPostalCode, $fCountry);
+	$groups = array('Information'=>$group_1, 'Contact Details'=>$group_2);	//Groups are array(Name=>array(fields))
 	
 	//get html code of form
-	$formObj->setFields($fields);
+	$formObj->setGroups($groups);
+	
+	//get html code of form
 	$formHtml = $formObj->htmlForm($fields);
 
 /*////////////////////////////////////////////////////////////////////////////////

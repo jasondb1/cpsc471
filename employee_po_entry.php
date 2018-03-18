@@ -57,6 +57,7 @@ Variables
 Fields
 ///////////////////////////////////////////////////////////////////////////////*/
 	
+	//***
 	// general format of Formelements is (column in table, label)
 	$fPoNumber   	= new FormTextField ("po_number", "PO #");
 	$fPoNumber->setReadOnly();
@@ -87,31 +88,37 @@ Fields
 	
 	//Create form	
 	$formObj = new FormHtml();
-	$formObj->setTitle("PO Details");
-	$formObj->setSuccessPage('employee_po_view.php');
+	$formObj->setTitle("PO Details");							//***
+	$formObj->setSuccessPage('employee_po_view.php');			//***
+					
+	//*** set fields and groups to display in form
+	$group_1 = array($fPoNumber, $fVendor, $fStatus, $fDescription, $fDateOrdered, $fShipDate, $fAmount);
+	$group_2 = array($fTerms, $fShipper, $fTracking);
+	$group_3 = array($fAcknowledged, $fRequireQc);
+	$group_4 = array($fNotes);
+	$groups = array('Details'=>$group_1, 'Shipping Details'=>$group_2, 'Receiving Details'=>$group_3, 'Notes'=>$group_4);	//Groups are array(Name=>array(fields))
 	
-	//set fields to display in form
-	$fields = array($fPoNumber, $fVendor, $fStatus, $fDescription, $fDateOrdered, $fShipDate, $fAmount, 
-					$fTerms, $fAcknowledged, $fRequireQc, $fShipper, $fTracking, $fNotes); //this is also the display order (TODO: maybe add groupings ie fieldset tag)
-	$formObj->setFields($fields);
+	//get html code of form
+	$formObj->setGroups($groups);	
 	
 /*////////////////////////////////////////////////////////////////////////////////
 Items
 ///////////////////////////////////////////////////////////////////////////////*/	
 	
-	//sets the fields for the individual items
+	//sets the fields for the individual items						/***
 	//Note [] is necessary for item fields to get input as an array
 	$iQty		= new FormTextField ("Quantity[]", "Qty");
 	$iPrice 	= new FormTextField ("UnitCost[]", "Unit Cost");
-	$iDescription= new FormTextField ("Description[]", "Description");
-	$iPart      = new FormTextField ("Part_No[]", "Part Numnber");
+	//$iDescription= new FormTextField ("Description[]", "Description");
+	$iPart      = new FormTextField ("Part_No[]", "Part Number");
 
-	$ifields = array($iQty, $iPrice, $iDescription, $iPart);
+	//$ifields = array($iQty, $iPrice, $iDescription, $iPart);
+	$ifields = array($iPart, $iQty, $iPrice);
 
 	$formObj->setItemFields($ifields);
 	
 	//get html code of form
-	$formHtml = $formObj->htmlForm($fields);
+	$formHtml = $formObj->htmlForm();
 
 /*////////////////////////////////////////////////////////////////////////////////
 Process Form
@@ -119,7 +126,7 @@ Process Form
 	if (isset($_POST['submit'])){
 	
 		//sanitize against sql injections
-		$_POST = sanitize($_POST);
+		$_POST = sanitize($_POST);		
 
 		//get $_Post values into associated array
 		$values = $formObj->getData($_POST);
@@ -136,19 +143,34 @@ Process Form
 		//Set Primary Key in Variable Section and do not change table here
 		if ($values[$primaryKey] == ""){
 			$database->newRecord($dbtable, $values);
+			
+			////////////////////////////////////only for items
+			//get purchase order id
+			$record_id = $database->getlink()->insert_id;
+			//get po number
+			$sql = "SELECT po_number FROM $dbtable WHERE po_number = '$record_id';";	//***
+			$retval = $database->query($sql);
+			$id_number = $retval->fetch_row();
+			$id_number = $id_number[0];
 		}
 		else {
-			$filter = '`'. $primaryKey . '` = '. $values[$primaryKey]; //goes in the WHERE of an SQL query
+			$filter = '`'. $primaryKey . '` = \''. $values[$primaryKey] . '\''; //goes in the WHERE of an SQL query
 			$database->updateRecord($dbtable, $values, $filter);
+			$id_number = $values['po_number'];											//***
 		}
 		
+
+///////////////////////////////////Items /***	
+		//TODO: Move this to FormHtml to clean this up	
 		//write item data.
-		$po_number = $values['po_number'];
-		$part_no   = $values['part_no'];
-		$quantity  = $values['Quantity'];
+		$po_number = $id_number;
+		$Part_No   = $_POST['Part_No'];
+		$Quantity  = $_POST['Quantity'];
+		$UnitCost  = $_POST['UnitCost'];
 		$sql = "DELETE FROM $db_purchase_order_items WHERE po_number='$po_number';";
 		$retval = $database->query($sql);
 		$i=0;
+		
 			while($i<count($part_no))
 			{
 			
@@ -160,15 +182,14 @@ Process Form
 				)
 				VALUES (
 				 '$po_number',
-				 '$part_no[$i]',
+				 '$Part_No[$i]',
 				 '$Quantity[$i]',
 				 '$UnitCost[$i]'
 				);";
-	
 				$retval = $database->query($sql);
 				  $i++;
 			}//end while
-			
+/////////////////////////////////////			
 		
 		//success message if submit successful
 		echo $formObj->successHtml();		
@@ -185,9 +206,10 @@ Edit Existing Record
 		//read form date 
 		$filter = '`'. $primaryKey  .'` = '. $edit_record;
 		$formObj->setDefaults($database, $dbtable, $filter);
-		$formHtml = $formObj->htmlForm($fields);
-	}
+		//$formHtml = $formObj->htmlForm($fields);
+
 	
+	//TODO: Move this to FormHtml to clean this up
 	//get data for items
 	//descriptions and details
 	//read form date 
@@ -196,9 +218,32 @@ Edit Existing Record
 	$retval = $database->query($sql);
 		  while($row = $retval->fetch_assoc()){
 		    $part_no[]		= $row['part_no'];
-			$Quantity[]		= $row['quantity'];
+			$Quantity[]		= $row['Quantity'];
 			$UnitCost[]		= $row['UnitCost'];
 		  }//end while
+		  
+	//put all item fields into 
+	$ifields = array();  
+	$i=0;
+	$var_count= count($part_no);
+	if ($var_count<1){$var_count=1;}
+	while($i<$var_count)
+	{
+		$iQty		= new FormTextField ("Quantity[]", "Qty", $Quantity[$i]);
+		$iPrice 	= new FormTextField ("UnitCost[]", "Unit Cost", $UnitCost[$i]);
+		$iPart      = new FormTextField ("Part_No[]", "Part Number", $part_no[$i]);
+		
+		$newfields = array($iPart, $iQty, $iPrice);
+		$ifields = array_merge($ifields, $newfields);
+		
+		$i++;
+	}//end while 
+	
+	$formObj->setEditCount($var_count);
+	$formObj->setItemFields($ifields);
+		  
+		 $formHtml = $formObj->htmlForm($fields);
+	}
 
 ?>
 <!DOCTYPE HTML>
