@@ -124,6 +124,8 @@ class FormHtml {
     
 //TODO: modify this function to do edit better
 //maybe make $iFieldList/$itemFields to array(array(field1, field2, field3), array(field1, field2, field3))
+//figure out a good way to pass in sql queries or default values
+
     public function htmlItemFields($iFieldList = "", $getDefaults = false){
         
         if ($iFieldList == ""){
@@ -133,6 +135,7 @@ class FormHtml {
         
         if ($getDefaults == true){
             
+            //$var_count = count($iFieldList);
             //get number of items
         }
         
@@ -146,7 +149,7 @@ class FormHtml {
             {
                 $htmlItemFields =  '<b>Item '. ($i + 1)  .'</b><br>';
                 $htmlItemFields .= '<div id="form_data">';
-//TODO:default value  
+//TODO:default value  git
                 $htmlItemFields .= $this->fieldsToHtml($iFieldList);
                 $htmlItemFields .= '<div style="clear:both;"></div>';
                 $htmlItemFields .= '</div>';
