@@ -31,13 +31,17 @@ class FormDateField extends FormField{
 // Return:  none
 //
 
-    function __construct($colName, $displayName, $defaultValue = ""){
+    function __construct($colName, $displayName,  $table, $defaultValue = ""){
         $this->columnName = $colName;
         $this->displayName = $displayName;
         $this->type = "date";
         if ($defaultValue == "") {
             $this->defaultValue = date("Y-m-d");
         }
+        else {
+            $this->defaultValue = $defaultValue;
+        }
+        $this->table = $table;
     }
     
 ////////////////////////////////////////////////////////////////////////////
@@ -52,12 +56,43 @@ class FormDateField extends FormField{
 //
 
     public function toHtml(){
+        $rand = rand();
         $html = '<label>';
         if ($this->isRequired) {$html .= "*";}
         $html .= $this->displayName. ':</label>';
-        $html .= '<input id="'. $this->id_type  .'" class="text" size="'. $this->size .
+        //$html .= '<input id="'. $this->id_type  .'" class="text" size="'. $this->size .
+        $html .= '<input id="datepicker'. $rand  .'" class="text" size="'. $this->size .
                 '" name="'. $this->columnName .'" value="'. $this->defaultValue .
                 '" readonly="readonly" />';
+               
+               
+                
+        $html .= '<script>';
+        $html .= '$(function() {';
+        $html .= '$( "#datepicker'. $rand .'" ).datepicker(';
+        $html .= '	{';
+        $html .= 'dateFormat: "yy-mm-dd",';
+		$html .= 'showButtonPanel: true,';
+        $html .= 'changeMonth: true,';
+        $html .= 'changeYear: true,';
+        $html .= '}';
+        $html .= ');';
+        $html .= '$( "#datepicker'. $rand .'" ).datepicker(';
+        $html .= '{';
+        $html .= 'dateFormat: "yy-mm-dd",';
+        $html .= 'showButtonPanel: true,';
+        $html .= 'changeMonth: true,';
+        $html .= 'changeYear: true,';
+        $html .= '}';
+        $html .= ');';
+        $html .= '});';
+		$html .= '</script>';
+		$html .= '<style type="text/css">';
+        $html .= '#datepicker'. $rand .'{';
+        $html .= 'background-position:right center;';
+        $html .= 'background-repeat:no-repeat; }';
+        $html .= '#datepicker'. $rand .'{background-image:url("images/calendar.png");';
+		$html .= '</style>';
         
         return $html;
     }

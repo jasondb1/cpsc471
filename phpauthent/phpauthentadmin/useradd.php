@@ -62,13 +62,11 @@ if ((!empty($_GET['action'])) && ($_GET['action'] == "create")) {
 			header ("Location: useradd.php?err=001");
 		}
 		
-
-		
 		/*
-			$db_fld_users_lastlogin    = 'lastlogin';
-	$db_fld_users_connections  = 'numlogins';
-	$db_fld_users_creationdate = 'creation';
-	*/
+		$db_fld_users_lastlogin    = 'lastlogin';
+		$db_fld_users_connections  = 'numlogins';
+		$db_fld_users_creationdate = 'creation';
+		*/
 		//$mysql_link = new MySQLi($dbhost, $dbusername, $dbpass, $dbname);
 		$mysql_link = new MySQLi($db_hostname, $db_username, $db_password, $db_database);
 		if ($mysql_link->connect_errno) {die($mysql_link->connect_error);}

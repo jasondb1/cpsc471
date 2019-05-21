@@ -6,6 +6,7 @@
 	require_once("phpauthent/phpauthent_config.php");
 	require_once("phpauthent/phpauthentadmin/locale/".$phpauth_language);
 	simplePageProtect();
+	$user_id = getUserId();
 	
 ?>
 <!DOCTYPE HTML>
@@ -70,7 +71,10 @@
 											<li><a href="employee_time_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Timelog</span></a></li>
 											</fieldset>
 
-											
+											<?php 	
+											$groupsArray = array("admin","supervisor","sales","accounting");
+											if (isEnabled(array(), $groupsArray)){ //display only those that are in groups
+											?>			
 											<fieldset>
 											<legend>Sales</legend>
 											<li><a href="employee_fixtures_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Fixtures</span></a></li>
@@ -79,14 +83,25 @@
 											<hr>
 											<li><a href="employee_customer_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Customers</span></a></li>
 											</fieldset>
+											<?php } ?>
 											
+											
+											<?php 	
+											$groupsArray = array("admin","supervisor","engineering","operations","r_and_d");
+											if (isEnabled(array(), $groupsArray)){ //display only those that are in group 
+											?>	
 											<fieldset>
 											<legend>Engineering</legend>
 
 											<li><a href="employee_components_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Components</span></a></li>
 											<li><a href="employee_project_view.php"><span class="button-menu"><i class="fa fa-database fa-fw"></i>&nbsp; Projects</span></a></li>
 											</fieldset>
+											<?php } ?>
 											
+											<?php 	
+											$groupsArray = array("admin","supervisor", "supply_chain", "accounting");
+											if (isEnabled(array(), $groupsArray)){ //display only those that are in group 
+											?>	
 											<fieldset>
 											<legend>Purchasing</legend>
 											<li><a href="employee_po_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Purchase Order</span></a></li>
@@ -94,10 +109,8 @@
 											<li><a href="employee_shipper_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Shippers</span></a></li>
 											<li><a href="employee_vendor_view.php"><span class="button-menu"><i class="fa fa-book fa-fw"></i>&nbsp; Vendors</span></a></li>
 											</fieldset>
-											<!--<fieldset>
-											<legend>Safety</legend>
-
-											</fieldset>-->
+											<?php } ?>
+											
 											</form>
 
 											</ul>

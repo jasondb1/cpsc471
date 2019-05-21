@@ -434,7 +434,7 @@ legend {
 </em></td>
   </tr>
   <tr>
-    <td valign="top" class="headmenu"><a href="index.php"><?=$menu_link_overview?></a> - <a href="<?=$phpauth_successfull_login_target?>"><?=$menu_link_homepage?></a> - <a href="../phpauthent_core.php?action=logout" class="style1"></a> <a href="../phpauthent_core.php?action=logout"><?=$menu_link_logout?> (<?=getUsername()?>)</a></td>
+    <td valign="top" class="headmenu"><a href="index.php"><?=$menu_link_overview?></a> - <a href="../<?=$phpauth_successfull_login_target?>"><?=$menu_link_homepage?></a> - <a href="../phpauthent_core.php?action=logout" class="style1"></a> <a href="../phpauthent_core.php?action=logout"><?=$menu_link_logout?> (<?=getUsername()?>)</a></td>
   </tr>
 </table>
 <p class="style1"><?=$txt_useredit_pageintro?></p>
@@ -541,10 +541,10 @@ legend {
 <td>
              <select name="ft_pt">
                 <?
-			  	// ACTIVE / INACTIVE
-				echo "<option value=\"". $row['ft_pt']    ."\">". $row['ft_pt']   ."</option>";
-				echo "<option value=\"Full Time\">Full Time</option>";
-				echo "<option value=\"Part Time\">Part Time</option>";            
+		// ACTIVE / INACTIVE
+		echo "<option value=\"". $row['ft_pt']    ."\">". $row['ft_pt']   ."</option>";
+		echo "<option value=\"Full Time\">Full Time</option>";
+		echo "<option value=\"Part Time\">Part Time</option>";            
 			  ?>
               </select>
 </td>
@@ -554,11 +554,11 @@ legend {
 <td>
              <select name="hourly_salary">
                 <?
-			  	// ACTIVE / INACTIVE
-				echo "<option value=\"". $row['hourly_salary']    ."\">". $row['hourly_salary']   ."</option>";
-				echo "<option value=\"Hourly\">Hourly</option>";
-				echo "<option value=\"Salary\">Salary</option>";            
-			  ?>
+		// Hourly / Salary
+		echo "<option value=\"". $row['hourly_salary']    ."\">". $row['hourly_salary']   ."</option>";
+		echo "<option value=\"Hourly\">Hourly</option>";
+		echo "<option value=\"Salary\">Salary</option>";            
+		?>
               </select>
 </td>
 </tr>

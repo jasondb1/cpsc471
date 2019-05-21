@@ -36,9 +36,10 @@
 	// Main configuration
 	// Database (MySQL) settings
 	$db_hostname = 'localhost';
-	$db_database = 'cpsc471';
-	$db_username = 'cpsc471';
-	$db_password = 'testing';
+	$db_database = 'silverpi_cpsc471';
+	$db_username = 'silverpi_cpsc471';
+	$db_password = 'FTiBJ&@4^xK1';
+	
 	//$db_hostname = $dbhost;
 	//$db_database = $dbname;
 	//$db_username = $dbusername;
@@ -49,9 +50,9 @@
 	// of your webserver space).
 	// Path to the login page :
 	//$phpauth_login = 'phpauthent_login.php';
-	$phpauth_login = '../_login.php';
+	$phpauth_login = './_login.php';
 	// Target of a successful login :
-	$phpauth_successfull_login_target = "../_employee_menu.php";
+	$phpauth_successfull_login_target = "./_employee_menu.php";
 	// Target of a successful logout :
 	$phpauth_successfull_logout_target = "../index.php";
 	

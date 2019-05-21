@@ -91,16 +91,88 @@ function getEmployeeNames(){
 		if ($mysql_link->connect_errno) {
 			die($mysql_link->connect_error);
 		}
-		$sql = "SELECT phpauthent_users.username FROM `employee_info` JOIN `phpauthent_users` ON `phpauthent_users`.id = `employee_info`.uid WHERE employee_info.status='Active'";
+		$sql = "SELECT phpauthent_users.username, phpauthent_users.id FROM `employee_info` JOIN `phpauthent_users` ON `phpauthent_users`.id = `employee_info`.uid WHERE employee_info.status='Active'";
 		$retval = $mysql_link->query($sql);
+		$employee_list = array();
 		
-		while ($row = $retval->fetch_array(MYSQLI_ASSOC)) {
-			//$employee_list[]=$row['username'];
-			$employee_list[$row['username']]=$row['id'];
+		while ($row = $retval->fetch_assoc()) {
+			$username = $row['username'];
+			$employee_list[ $row['username'] ]=$row['id'];
 		}
-		sort ($employee_list);
+		krsort ($employee_list);
+
 		return $employee_list;
 }
+
+/*////////////////////////////////////////////////////////////////////////////////
+Get Part List
+///////////////////////////////////////////////////////////////////////////////*/
+function getPartList(){
+		require "_config.php";
+		
+		$mysql_link = new MySQLi($dbhost, $dbusername, $dbpass, $dbname);
+		if ($mysql_link->connect_errno) {
+			die($mysql_link->connect_error);
+		}
+		$sql = "SELECT part_no, description FROM Inventory WHERE 1 ORDER BY part_no ASC;";
+		$retval = $mysql_link->query($sql);
+		$part_list = array();
+		
+		while ($row = $retval->fetch_assoc()) {
+			$part_description = $row['part_no'] . " - " . $row['description'];
+			$part_list[ $part_description ]=$row['part_no'];
+		}
+		//krsort ($part_list);
+
+		return $part_list;
+}
+
+/*////////////////////////////////////////////////////////////////////////////////
+Get Components
+///////////////////////////////////////////////////////////////////////////////*/
+function getComponentList(){
+		require "_config.php";
+		
+		$mysql_link = new MySQLi($dbhost, $dbusername, $dbpass, $dbname);
+		if ($mysql_link->connect_errno) {
+			die($mysql_link->connect_error);
+		}
+		$sql = "SELECT Components.part_no, Inventory.description FROM Components JOIN Inventory ON Components.part_no = Inventory.part_no WHERE 1 ORDER BY part_no ASC;";
+		$retval = $mysql_link->query($sql);
+		$part_list = array();
+		
+		while ($row = $retval->fetch_assoc()) {
+			$part_description = $row['part_no'] . " - " . $row['description'];
+			$part_list[ $part_description ]=$row['part_no'];
+		}
+		//krsort ($part_list);
+
+		return $part_list;
+}
+
+/*////////////////////////////////////////////////////////////////////////////////
+Get Part List
+///////////////////////////////////////////////////////////////////////////////*/
+function getActiveJobsList(){
+		require "_config.php";
+		
+		$mysql_link = new MySQLi($dbhost, $dbusername, $dbpass, $dbname);
+		if ($mysql_link->connect_errno) {
+			die($mysql_link->connect_error);
+		}
+		$sql = "SELECT ProjectNo, Description FROM Project WHERE Status <> 'Complete' ORDER BY ProjectNo DESC;";
+		$retval = $mysql_link->query($sql);
+		$job_list = array();
+		
+		while ($row = $retval->fetch_assoc()) {
+			$job_description = $row['ProjectNo'] . " - " . $row['Description'];
+			$job_list[ $job_description ]=$row['ProjectNo'];
+		}
+		//krsort ($part_list);
+
+		return $job_list;
+}
+
 
 /*////////////////////////////////////////////////////////////////////////////////
 Get Email

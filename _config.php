@@ -27,18 +27,28 @@ date_default_timezone_set('America/Edmonton');
 	$company_keywords		= "test company";
 
 // DB SETTINGS
-	$dbhost 	= "localhost";	// Change this to the proper DB Host name
-	$dbusername = "cpsc471"; 	// Change this to the proper DB User
-	$dbpass 	= "testing";	// Change this to the proper DB User password
-	$dbname		= "cpsc471"; 	// Change this to the proper DB Name
+	$dbhost 	= "localhost";			// Change this to the proper DB Host name
+	$dbusername = "silverpi_cpsc471"; 	// Change this to the proper DB User
+	$dbpass 	= "FTiBJ&@4^xK1";		// Change this to the proper DB User password
+	$dbname		= "silverpi_cpsc471"; 	// Change this to the proper DB Name
+	$db_employee					= "phpauthent_users";
 	
 //jobfile database data
 	$db_table_customers				= "Customers";
 	$db_purchase_order				= "Purchase_Order";
 	$db_purchase_order_items		= "PO_Components";
-	
 	$db_table_temp					= "temp";
-	
+	$db_table_shipper				= "Shipper";
+	$db_table_vendor				= "Vendor";
+	$db_table_project				= "Project";
+	$db_table_fixtures				= "Fixtures";
+	$db_table_inventory				= "Inventory";
+	$db_table_sales_order			= "Sales_Order";
+	$db_table_timelog				= "Timelog";
+	$db_table_quote					= "Quote";
+	$db_table_quote_items			= "Items";
+	$db_table_timelog				= "Timelog";
+	$db_table_fixture_components	= "Fixture_Components";
 	
 //file settings
 	$global_path			= '/files/';
@@ -99,5 +109,28 @@ $po_status= array(
 "Complete"=>"Complete"
 );
 
-	
+$project_status= array(
+"In Progress"=>"In Progress",
+"On Hold"=>"On Hold",
+"Pending"=>"Pending",
+"Complete"=>"Complete"
+);
+
+$fixture_types= array(
+"Indoor"=>"Indoor",
+"Light Panel"=>"Light Panel",
+"Outdoor"=>"Outdoor",
+"Controller"=>"Controller"
+);
+
+$order_status= array(
+"On Order"=>"On Order",
+"Back Ordered"=>"Back Ordered",
+"Shipped"=>"Shipped",
+"Received"=>"Received",
+"Paid"=>"Paid",
+"Complete"=>"Complete"
+);
+
+
 ?>

@@ -1,6 +1,6 @@
 <?php
-ini_set('display_errors',1);
-error_reporting(E_ALL);
+//ini_set('display_errors',1);
+//error_reporting(E_ALL);
 
 /*////////////////////////////////////////////////////////////////////////////////
 Includes
@@ -18,7 +18,7 @@ Includes
 Page Protection
 ///////////////////////////////////////////////////////////////////////////////*/	
 	$usersArray  = array();
-	$groupsArray = array("admin","supervisor");
+	$groupsArray = array("admin","supervisor", "supply_chain", "accounting");
 	pageProtect($usersArray,$groupsArray);	
 
 /*////////////////////////////////////////////////////////////////////////////////
@@ -36,22 +36,37 @@ Variables
 
 	//get and set initial variables
 	$user 			= trim(getUsername());
+	$user_id		= getUserId();
 	$page_title		= "Purchase Order Entry";					//***
 	
 	$dbtable		= $db_purchase_order;				//used multiple times in other locations
 	$primaryKey		= $database->getPrimaryKey($dbtable);
+	$itemKey		= $database->getPrimaryKey("PO_Components");
 	
 		if (isset($_GET['edit_record'])) {
 			$edit_record 	= $_GET['edit_record'];
 		}
 		if (isset($_GET['remove_item'])) {
-			$edit_record 	= $_GET['remove_item'];				
+			$remove_item	= $_GET['remove_item'];				
 		}
 		if (isset($_GET['remove_po'])) {
-			$edit_record 	= $_GET['remove_po'];				//***
+			$remove_po	= $_GET['remove_po'];				//***
 		}
 		$refer_page 	= $_SERVER['HTTP_REFERER'];
 
+
+/*////////////////////////////////////////////////////////////////////////////////
+Remove Item
+///////////////////////////////////////////////////////////////////////////////*/
+
+///add code for remove item
+if ($remove_item!=""){
+$refer_page 	= $_GET['refer_page'];
+	$sql = "DELETE FROM $db_purchase_order_items WHERE id='$remove_item'";
+	$database->query($sql);
+	$message = "<br><b><span style=\"padding-left:2em;color:#f00;\"><big>Item Removed</big></span></b><br>";
+
+}	
 	
 /*////////////////////////////////////////////////////////////////////////////////
 Fields
@@ -59,32 +74,32 @@ Fields
 	
 	//***
 	// general format of Formelements is (column in table, label)
-	$fPoNumber   	= new FormTextField ("po_number", "PO #");
+	$fPoNumber   	= new FormTextField ("po_number", "PO #", $dbtable);
 	$fPoNumber->setReadOnly();
-	$fStatus		= new FormSelect ("status", "Status", $po_status);
-	$fDateOrdered	= new FormDateField ("date_ordered", "Date Ordered");
-	$fShipDate		= new FormDateField ("est_ship_date", "Est Ship Date");
-	$fAmount		= new FormTextField ("amount", "Amount");
-	$fAcknowledged	= new FormCheckbox ("acknowledged", "Acknowledged");
-	$fRequireQc		= new FormCheckbox ("require_qc", "QC required");
+	$fStatus		= new FormSelect ("status", "Status", $po_status, $dbtable);
+	$fDateOrdered	= new FormDateField ("date_ordered", "Date Ordered", $dbtable);
+	$fShipDate		= new FormDateField ("est_ship_date", "Est Ship Date", $dbtable);
+	$fAmount		= new FormTextField ("amount", "Amount", $dbtable);
+	$fAcknowledged	= new FormCheckbox ("acknowledged", "Acknowledged", $dbtable);
+	$fRequireQc		= new FormCheckbox ("require_qc", "QC required", $dbtable);
 	
-	//TODO: get vendor list from database from need select list with display=>value
-	$vlist = array("Fake1"=>12345, "Fake2"=>45678);
-	$fVendor		= new FormSelect ("vendor_id", "Vendor", $vlist);
+	$vendor_list = $database->getListAssoc("Vendor", "Name", "Vendor_ID", "1", true);
+
 	
-	$fNotes			= new FormTextBox ("notes", "Notes");
+	$fVendor		= new FormSelect ("vendor_id", "Vendor", $vendor_list, $dbtable);
+	
+	$fNotes			= new FormTextBox ("notes", "Notes", $dbtable);
 	$fNotes->setSize(4, 35);
 	
-	$fDescription = new FormTextBox ("description", "Description");
+	$fDescription = new FormTextBox ("description", "Description", $dbtable);
 	
-	$fTerms			= new FormSelect ("payment_terms", "Terms", $terms_list);
+	$fTerms			= new FormSelect ("payment_terms", "Terms", $terms_list, $dbtable);
 	
-	//TODO: get shipper list from database from need select list with display=>value
-	$slist = array("Ship1"=>12345, "Ship2"=>45678);
-	$fShipper		= new FormSelect ("shipper_id", "Shipper", $slist);
+	$shipper_list = $database->getListAssoc("Shipper", "Shname", "ShipperID", "1", true);
+	$fShipper		= new FormSelect ("shipper_id", "Shipper", $shipper_list, $dbtable);
 	
-	$fTracking = new FormTextField ("tracking_no", "Tracking #");
-	$fDescription = new FormHidden ("ordered_by", "Ordered By", $user);
+	$fTracking = new FormTextField ("tracking_no", "Tracking #", $dbtable);
+	$fDescription = new FormHidden ("ordered_by", "Ordered By", $dbtable, $user_id);
 	
 	//Create form	
 	$formObj = new FormHtml();
@@ -107,18 +122,23 @@ Items
 	
 	//sets the fields for the individual items						/***
 	//Note [] is necessary for item fields to get input as an array
-	$iQty		= new FormTextField ("Quantity[]", "Qty");
-	$iPrice 	= new FormTextField ("UnitCost[]", "Unit Cost");
-	//$iDescription= new FormTextField ("Description[]", "Description");
-	$iPart      = new FormTextField ("Part_No[]", "Part Number");
+	
+	$iQty		= new FormTextField ("Quantity", "Qty", "PO_Components");
+	$iQty->setIsMultiItem();
+	$iPrice 	= new FormTextField ("UnitCost", "Unit Cost", "PO_Components");
+	$iPrice->setIsMultiItem();
 
-	//$ifields = array($iQty, $iPrice, $iDescription, $iPart);
+	$part_list = getPartList();
+	$iPart      = new FormSelect ("part_no", "Part Number", $part_list, "PO_Components");
+	$iPart->setIsMultiItem();
+
 	$ifields = array($iPart, $iQty, $iPrice);
 
 	$formObj->setItemFields($ifields);
+	$itemHtml = $formObj->htmlItemFields();
 	
 	//get html code of form
-	$formHtml = $formObj->htmlForm();
+	$formHtml = $formObj->htmlForm($itemHtml);
 
 /*////////////////////////////////////////////////////////////////////////////////
 Process Form
@@ -144,9 +164,10 @@ Process Form
 		if ($values[$primaryKey] == ""){
 			$database->newRecord($dbtable, $values);
 			
-			////////////////////////////////////only for items
+		////////////////////////////////////only for items
 			//get purchase order id
 			$record_id = $database->getlink()->insert_id;
+			
 			//get po number
 			$sql = "SELECT po_number FROM $dbtable WHERE po_number = '$record_id';";	//***
 			$retval = $database->query($sql);
@@ -164,14 +185,13 @@ Process Form
 		//TODO: Move this to FormHtml to clean this up	
 		//write item data.
 		$po_number = $id_number;
-		$Part_No   = $_POST['Part_No'];
+		$Part_No   = $_POST['part_no'];
 		$Quantity  = $_POST['Quantity'];
 		$UnitCost  = $_POST['UnitCost'];
 		$sql = "DELETE FROM $db_purchase_order_items WHERE po_number='$po_number';";
 		$retval = $database->query($sql);
 		$i=0;
-		
-			while($i<count($part_no))
+			while($i<count($Part_No))
 			{
 			
 				$sql = "INSERT INTO $db_purchase_order_items (
@@ -203,46 +223,21 @@ Edit Existing Record
 	$edit_record = $_REQUEST['edit_record'];
 
 	if ($edit_record !=""){
-		//read form date 
+		//read form data 
 		$filter = '`'. $primaryKey  .'` = '. $edit_record;
 		$formObj->setDefaults($database, $dbtable, $filter);
-		//$formHtml = $formObj->htmlForm($fields);
 
-	
-	//TODO: Move this to FormHtml to clean this up
-	//get data for items
-	//descriptions and details
-	//read form date 
-	$po_number = $fPoNumber->getDefaultValue();
-	$sql = "SELECT * FROM $db_purchase_order_items WHERE `po_number` = '$po_number'";
-	$retval = $database->query($sql);
-		  while($row = $retval->fetch_assoc()){
-		    $part_no[]		= $row['part_no'];
-			$Quantity[]		= $row['Quantity'];
-			$UnitCost[]		= $row['UnitCost'];
-		  }//end while
-		  
-	//put all item fields into 
-	$ifields = array();  
-	$i=0;
-	$var_count= count($part_no);
-	if ($var_count<1){$var_count=1;}
-	while($i<$var_count)
-	{
-		$iQty		= new FormTextField ("Quantity[]", "Qty", $Quantity[$i]);
-		$iPrice 	= new FormTextField ("UnitCost[]", "Unit Cost", $UnitCost[$i]);
-		$iPart      = new FormTextField ("Part_No[]", "Part Number", $part_no[$i]);
+
+		//get po_number
+		$po_number = $fPoNumber->getDefaultValue();
+		//get data for items
+		$sql = "SELECT * FROM $db_purchase_order_items WHERE `po_number` = '$po_number'";
 		
-		$newfields = array($iPart, $iQty, $iPrice);
-		$ifields = array_merge($ifields, $newfields);
+		$formObj->setItemFields($ifields);
 		
-		$i++;
-	}//end while 
-	
-	$formObj->setEditCount($var_count);
-	$formObj->setItemFields($ifields);
-		  
-		 $formHtml = $formObj->htmlForm($fields);
+		$itemHtml = $formObj->htmlEditItemFields($database, $sql, $itemKey, "", $edit_record);
+		
+		$formHtml = $formObj->htmlForm($itemHtml);
 	}
 
 ?>
@@ -326,6 +321,7 @@ Edit Existing Record
 								<div class="12u">
 									<header>
 										<h3><?php echo $page_title?> </h3>
+										<?php $message;?>
 									</header>
 									<div id="menu">
 										<ul>

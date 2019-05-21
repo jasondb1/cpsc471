@@ -40,9 +40,9 @@ Variables
 	$primaryKey		= $database->getPrimaryKey($dbtable);
 	
 	//*** general format of Formelements is (column in table, label, default value)
-	$fId   	= new FormTextField ("id", "Temp ID");
+	$fId   	= new FormTextField ("id", "Temp ID", $dbtable);
 	$fId->setReadOnly();
-	$fItems	= new FormTextField ("items", "Items");
+	$fItems	= new FormTextField ("items", "Items", $dbtable);
 	
 	//Create form	
 	$formObj = new FormHtml();

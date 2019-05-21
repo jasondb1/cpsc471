@@ -1,6 +1,6 @@
 <?php
-ini_set('display_errors',0); 
-error_reporting(0);
+//ini_set('display_errors',0); 
+//error_reporting(0);
 header("Cache-Control: private, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // A date in the past
@@ -20,7 +20,7 @@ Includes
 Page Protection
 ///////////////////////////////////////////////////////////////////////////////*/
 	$usersArray = array("administrator");
-	$groupsArray = array("admin","employee","payroll","supervisor");	//***
+	$groupsArray = array("admin","supervisor", "supply_chain", "accounting");	//***
 	pageProtect($usersArray,$groupsArray);
 
 /*////////////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ Variables
 	//get and set initial variables
 		$database = new Database($dbhost, $dbname, $dbusername, $dbpass);
 		
-		$page_title="View Jobs";									//***
+		$page_title="View Purchase Orders";									//***
 		
 		$dbtable		= $db_purchase_order;						//***
 		$primaryKey		= $database->getPrimaryKey($dbtable);
@@ -44,8 +44,8 @@ Set View Options/ filter results of query
 		$page_rows = $_COOKIE['page_rows'];
 	}
 	else {
-		$orderBy = "";
-		$direction = "";
+		$orderBy = "po_number";
+		$direction = "DESC";
 		$page_rows = "";
 	}
 	
@@ -75,9 +75,9 @@ Delete Record
 		array('columnName'=>'date_ordered', 	'displayName'=>'Order Date', 	'type'=>'text'),
 		array('columnName'=>'est_ship_date', 	'displayName'=>'Est Ship Date', 	'type'=>'text'),
 		array('columnName'=>'amount', 			'displayName'=>'Amount', 		'type'=>'amount'),
-		array('columnName'=>'acknowledged', 	'displayName'=>'Ack', 		'type'=>'text'),
-		array('columnName'=>'require_qc', 		'displayName'=>'Req QC', 		'type'=>'text'),
-		array('columnName'=>'vendor_id', 		'displayName'=>'Vendor', 			'type'=>'text')
+		array('columnName'=>'acknowledged', 	'displayName'=>'Ack', 		'type'=>'boolean'),
+		array('columnName'=>'require_qc', 		'displayName'=>'Req QC', 		'type'=>'boolean'),
+		array('columnName'=>'Name', 		'displayName'=>'Vendor', 			'type'=>'text')
 	);
 	
 	//Search Criteria
@@ -97,6 +97,9 @@ Delete Record
 		$where =" true"; //default criteria
 	}
 	
+	$sql = "SELECT Purchase_Order.*, Vendor.Name FROM Purchase_Order JOIN Vendor ON Vendor.Vendor_ID = Purchase_Order.Vendor_ID WHERE ". $where   ." ORDER BY ". $orderBy . " " .$direction;
+  
+	
 	//Edit or upload page
 	$table = new Table();
 	$table->dataTable=$dbtable;
@@ -111,7 +114,7 @@ Delete Record
 	$table->orderDirection = $direction;
 	$table->filter = $where;
 	$table->setdb($database);
-	$tableHTML = $table->toHTML();
+	$tableHTML = $table->toHTML($sql);
 
 ?>
 

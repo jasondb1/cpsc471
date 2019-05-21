@@ -59,7 +59,7 @@
 								<section class="is-highlight">
 
 									<header>
-										<h2>Employee Menu</h2>
+										<h2>Administration Menu</h2>
 										</header>
 										<div id="menu">
 											<ul>
@@ -69,10 +69,6 @@
 													<legend>Users</legend>
 													<li><a href="phpauthent/phpauthentadmin/" ><span class="button-menu"><i class="fa fa-users fa-fw"></i>&nbsp; Users</span></a></li>
 													<li><a href="phpmyadmin/" ><span class="button-menu"><i class="fa fa-users fa-fw"></i>&nbsp; phpmyadmin</span></a></li>
-												</fieldset>
-												<fieldset>
-													<legend>Other Information</legend>
-													<li><a href="admin_snow_list.php" ><span class="button-menu"><i class="fa fa-database fa-fw"></i>&nbsp; Edit Snow List</span></a></li>
 												</fieldset>
 											</form>
 

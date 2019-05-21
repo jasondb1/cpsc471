@@ -7,13 +7,13 @@
  * This class formats tables generated from SQL queries
  * 
  */
-ini_set('display_errors',0); 
-error_reporting(0);
+//ini_set('display_errors',0); 
+//error_reporting(0);
 require_once('Database.php');
 
 class Table{
 
-    private $DEBUG = true;
+    private $DEBUG = false;
     public $title;
     public $columns;// column format array(array ('columnName'=>'<name>', 'displayName'=>'<disp name>', 'type'=>'<type>')
     public $enableEdit = false; //adds and edit column
@@ -101,15 +101,21 @@ class Table{
 // Return: none
 //
 
-    public function toHTML($data = null){
+    public function toHTML($sql = null){
 
-    if ($data == null){
+
+    if ($sql == null){
         $this->dataFromSQL();
     }
+    else
+    {
+        $this->dataFromSQL($sql);
+    }
+
 
     //TODO: expand this to go to edit page to enter something for table or other
     if ($this->queryData == null){
-        echo "No table data exists";
+        echo "No query data exists make sure you call \$database->query(\$sql);";
     }
 
     //Primary key is used for editing and deleting values
@@ -182,6 +188,11 @@ class Table{
                 }
                 elseif ($colType=="hours"){ 
                     $html.= sprintf("%01.2f", $row[$colName]).'</td>';
+                }
+                elseif ($colType=="boolean"){ 
+                    if ($row[$colName] == 1){$html.= "Yes";}
+                    else {$html .= "No";}
+                    $html .= '</td>';
                 }
                 elseif ($colType == "time_in" or $colName == "time_out") {
                     $html .= date ("H:i",strtotime($row[$colName]));  

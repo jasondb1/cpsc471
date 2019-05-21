@@ -28,11 +28,12 @@ class FormTextField extends FormField{
 // Return:  none
 //
 
-    function __construct($colName, $displayName, $defaultValue = ""){
+    function __construct($colName, $displayName, $table, $defaultValue = ""){
         $this->columnName = $colName;
         $this->displayName = $displayName;
         $this->type = "text";
         $this->defaultValue = $defaultValue;
+        $this->table = $table;
     }
     
 ////////////////////////////////////////////////////////////////////////////
@@ -52,8 +53,15 @@ class FormTextField extends FormField{
         $html .= $this->displayName. ':</label>';
         
         //TODO: add readonly parameter
+        
         $html .= '<input class="text" type="'. $this->type    .'" size="'. $this->size .
-        '" name="'. $this->columnName .'" value="'. $this->defaultValue .'" '; 
+        '" name="'. $this->columnName;
+        
+        if ($this->isMultiItem == true){
+            $html .= "[]";
+        }
+        
+        $html .= '" value="'. $this->defaultValue .'" '; 
         $html .= 'placeholder="'. $this->displayName    .'" ';
         if ($this->readOnly){
             $html .=  'readonly="readonly"';

@@ -8,8 +8,8 @@
  * 
  */
  
-ini_set('display_errors',1);
-error_reporting(E_ALL);
+//ini_set('display_errors',1);
+//error_reporting(E_ALL);
  
 require('FormTextField.php');
 require('FormTextBox.php');
@@ -17,6 +17,7 @@ require('FormDateField.php');
 require('FormCheckbox.php');
 require('FormHidden.php');
 require('FormSelect.php');
+require('FormTimeField.php');
 
 class FormHtml {
 
@@ -43,12 +44,12 @@ class FormHtml {
 //
 // Outputs The html code for the form
 //
-// Param:    none
+// Param: $htmlItems -> The html code for the items required in code, 
 //
 // Return: a string of html that contains the form code
 //
     
-    public function htmlForm($edit = false){
+    public function htmlForm($htmlItems = ""){
         $html = '<form method="post" action="' .$_SERVER['PHP_SELF'] .'" name="'. $this->formName . '">';
         $html .= '<input class="submit" type="submit" name="submit" value="Submit"/>&nbsp;';
 		$html .= '<input class="submit" type="submit" name="submit" value="Cancel" onclick="document.'. $this->formName . '.action=' .$_SERVER['PHP_SELF'] .';"/>&nbsp;';
@@ -60,8 +61,11 @@ class FormHtml {
             $html .= '</fieldset>';
         }
 
-        if ($this->hasItems){
-            $html .= $this->htmlItemFields();
+        // if ($this->hasItems){
+            // $html .= $this->htmlItemFields();
+        // }
+        if ($htmlItems != ""){
+            $html .= $htmlItems;
         }
         
         $html .= "</form>";
@@ -80,9 +84,13 @@ class FormHtml {
 //
     
     public function getData($post){
+        
+
         $values = array();
         foreach($this->fields as $field){
             $colName = $field->columnName;
+            $table = $field->getTable();
+            
             $values[$colName] = $post[$colName];
         }
      $this->data = $values;
@@ -108,7 +116,7 @@ class FormHtml {
         }
         return $html;
     }
-    
+      
 ////////////////////////////////////////////////////////////////////////////
 //
 // htmlItemFields
@@ -122,21 +130,13 @@ class FormHtml {
 //    
     
     
-//TODO: modify this function to do edit better
-//maybe make $iFieldList/$itemFields to array(array(field1, field2, field3), array(field1, field2, field3))
-//figure out a good way to pass in sql queries or default values
+//TODO: modify this function to combine with editing htmlItemEdit
 
-    public function htmlItemFields($iFieldList = "", $getDefaults = false){
+
+    public function htmlItemFields($iFieldList = ""){
         
         if ($iFieldList == ""){
             $iFieldList = $this->itemFields;
-        }
-        
-        
-        if ($getDefaults == true){
-            
-            //$var_count = count($iFieldList);
-            //get number of items
         }
         
         $i=0;
@@ -149,7 +149,6 @@ class FormHtml {
             {
                 $htmlItemFields =  '<b>Item '. ($i + 1)  .'</b><br>';
                 $htmlItemFields .= '<div id="form_data">';
-//TODO:default value  git
                 $htmlItemFields .= $this->fieldsToHtml($iFieldList);
                 $htmlItemFields .= '<div style="clear:both;"></div>';
                 $htmlItemFields .= '</div>';
@@ -185,13 +184,13 @@ class FormHtml {
                   
         $htmlScript .= "            var div1 = document.createElement('div'); \n"; 
                   
-                    //Get template data  
+        //Get template data  
         $htmlScript .= "            div1.innerHTML = '<b>Item ' + (counter + 1) + '</b><br>';\n";
         $htmlScript .= "            div1.innerHTML += formhtml;\n";
         $htmlScript .= "            div1.innerHTML += '<br><hr>';\n";		
                   
-                    //append to our form, so that template data  
-                    // //become part of form  
+        //append to our form, so that template data  
+        // //become part of form  
         $htmlScript .= "            document.getElementById(divName).appendChild(div1);\n";  
         $htmlScript .= "            counter++;\n";
         $htmlScript .= "            }\n";
@@ -251,8 +250,8 @@ class FormHtml {
 
     public function setGroups($groups){
         $this->groups = $groups;
-        $allFields = array();
-        
+        $allFields = array();				//this is why array is printed on some forms
+		
         //enter them into fields for this array for other functions
         foreach ($this->groups as $name=>$fields){
             $allFields = array_merge($allFields, $fields);
@@ -351,19 +350,41 @@ class FormHtml {
 //
     public function setDefaults($database, $table, $filter){
         
-        $sql = "SELECT * FROM $table WHERE $filter";
+        foreach($this->fields as $field){
+            $colName = $field->getColumnName();
+            $table = $field->getTable();
+            
+            $sql = "SELECT ". $colName  ." FROM $table WHERE $filter";
+            $retval = $database->query($sql);
+            //return should be only a value
+            $row = $retval->fetch_assoc();
+            $field->setDefaultValue($row[$colName]);
+        }
+
+    }
+   
+////////////////////////////////////////////////////////////////////////////
+//
+// setDefaultsSql
+//
+// Sets the default values from database data with $sql parameter
+//
+// Param: $sql - the sql that gets data for each column in the form
+//
+// Return: none
+//
+    public function setDefaultsSql($database, $sql){
+              
         $retval = $database->query($sql);
 
         //return should be only a single row of values
         $row = $retval->fetch_assoc();
         
-
         foreach($this->fields as $field){
             $colName = $field->getColumnName();
-            //echo $colName;
             $field->setDefaultValue($row[$colName]);
         }
-//var_dump($this->fields);
+
     }
    
 ////////////////////////////////////////////////////////////////////////////
@@ -403,4 +424,116 @@ class FormHtml {
     
     return $html;
    }
+   
+
+////////////////////////////////////////////////////////////////////////////
+//
+// htmlEditItemFields
+//
+// Code to display for failure
+//
+// Param: none
+//
+// Return: html code displayed for failure
+//
+//TODO: Maybe combine with the htmlItemFields if possible
+
+    public function htmlEditItemFields($database, $sql, $itemKey, $iFieldList = "", $editRecord= ""){
+        
+        if ($iFieldList == ""){
+            $iFieldList = $this->itemFields;
+        }
+        
+	//read form sql parameter
+	$retval = $database->query($sql);
+          
+        $i=0;
+        $var_count = $retval->num_rows;
+        if ($var_count<1){$var_count=1;}    //make sure at least one item shows up on new po
+            
+            $htmlItemFields = "";
+            
+            //Print out each individual item.
+            while($i<$var_count)
+            {
+                $htmlItemFields .=  '<b>Item '. ($i + 1)  .'</b><br>';
+                $htmlItemFields .= '<div id="form_data">';
+
+                $row = $retval->fetch_assoc();
+
+                foreach($iFieldList as $field){
+                    $columnName = $field->getColumnName();
+                    //$columnName = trim(preg_replace('/\s*\([^)]*\)/', '', $columnName)); //strip brackets            
+                    $field->setDefaultValue($row[$columnName]);
+                    $htmlItemFields .= $field->toHtml();
+                }
+
+                $htmlItemFields .= '<div style="clear:both;"></div>';
+                $htmlItemFields .= '</div>';
+                
+                // //add delete if >1 items
+                if ($i>0 || $var_count>1){
+                    $htmlItemFields .= '<a style="float:right;" href="'. $_SERVER['PHP_SELF']  .'?remove_item='.$row[$itemKey] . '&id='. $i  . '&edit_record='. $editRecord .'&refer_page='. $_SERVER['HTTP_REFERER'] .'"><img src="images/remove.png" />Remove Item</a>';
+                    }
+               $htmlItemFields .= '<br><hr>';
+                $i++;
+            }//end while
+
+        //<!-- Dynamic JS -->
+        $htmlScript = "<script>\n";
+        $htmlScript .= 'var counter = ' . $var_count . ";\n";
+        $htmlScript .= "var limit = 20;\n";
+        
+        $htmlScript .= "var formhtml ='";
+        //$htmlScript .= $htmlItemFields;
+        $htmlScript .= $this->fieldsToHtml($iFieldList);
+        $htmlScript .= "';\n";
+
+        $htmlScript .= "formhtml += '<div style=\"clear:both;\"></div>';\n";
+
+        $htmlScript .= "function addInput(divName){\n";
+        
+        $htmlScript .= "             if (counter == limit)  {\n";
+        $htmlScript .= '                  alert("You have reached the limit of adding " + counter + " items");'. "\n";
+        $htmlScript .= "             }\n";
+        $htmlScript .= "             else {"; 
+                  
+        $htmlScript .= "            var div1 = document.createElement('div'); \n"; 
+                  
+        //Get template data  
+        $htmlScript .= "            div1.innerHTML = '<b>Item ' + (counter + 1) + '</b><br>';\n";
+        $htmlScript .= "            div1.innerHTML += formhtml;\n";
+        $htmlScript .= "            div1.innerHTML += '<br><hr>';\n";		
+                  
+        //append to our form, so that template data  
+        //become part of form  
+        $htmlScript .= "            document.getElementById(divName).appendChild(div1);\n";  
+        $htmlScript .= "            counter++;\n";
+        $htmlScript .= "            }\n";
+        $htmlScript .= "    }\n";
+        $htmlScript .= "</script>\n";
+
+        //create items
+        $htmlItems = "";
+
+        $htmlItems .= "<fieldset>\n";
+        $htmlItems .=    "<legend>Items</legend>\n";
+        $htmlItems .=       "<div style=\"float:clear;\"></div>\n";
+        $htmlItems .=       "<div id=\"dynamicInput\">\n";
+                    
+        $htmlItems .= $htmlItemFields;
+
+        $htmlItems .=  "</div>\n";
+        $htmlItems .=  "<span id=\"writeroot\"></span>\n";
+        $htmlItems .=   '<input class="submit" type="button" value="Add Another Item" onClick="addInput(\'dynamicInput\');"><br>' . "\n";
+        $htmlItems .=    '<input class="submit" value="Submit" type="submit" name="submit">' . "\n";
+                    
+        $htmlItems .= $htmlScript;
+
+        $htmlItems .= '<div style="float:clear;"></div><br>' ."\n";
+        $htmlItems .= '</fieldset>' . "\n";
+        
+        return $htmlItems;
+    }
+   
 }

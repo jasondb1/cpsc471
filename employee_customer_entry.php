@@ -1,6 +1,6 @@
 <?php
-ini_set('display_errors',1);
-error_reporting(E_ALL);
+//ini_set('display_errors',1);
+//error_reporting(E_ALL);
 
 /*////////////////////////////////////////////////////////////////////////////////
 Includes
@@ -18,7 +18,7 @@ Includes
 Page Protection
 ///////////////////////////////////////////////////////////////////////////////*/	
 	$usersArray  = array();
-	$groupsArray = array("admin","supervisor");					//***
+	$groupsArray = array("admin","supervisor","sales","accounting");					//***
 	pageProtect($usersArray,$groupsArray);	
 
 /*////////////////////////////////////////////////////////////////////////////////
@@ -40,18 +40,18 @@ Variables
 	$primaryKey		= $database->getPrimaryKey($dbtable);
 	
 	//*** general format of Formelements is (column in table, label, default value)
-	$fCustomerID   	= new FormTextField ("CustomerID", "Customer ID");
+	$fCustomerID   	= new FormTextField ("CustomerID", "Customer ID", $dbtable);
 	$fCustomerID->setReadOnly();
-	$fCFname		= new FormTextField ("CFname", "First Name");
-	$fCLname		= new FormTextField ("CLname", "Last Name");
-	$fStreet		= new FormTextField ("Street", "Street");
-	$fCity			= new FormTextField ("City", "City");
-	$fProvince		= new FormTextField ("Province", "Province");
-	$fPostalCode	= new FormTextField ("Postal_Code", "Postal Code");
-	$fCountry		= new FormTextField ("Country", "Country");
-	$fEmail			= new FormTextField ("Email", "Email");
-	$fPhone			= new FormTextField ("Phone", "Phone");
-	$fCompany		= new FormTextField ("CompanyName", "Company");
+	$fCFname		= new FormTextField ("CFname", "First Name", $dbtable);
+	$fCLname		= new FormTextField ("CLname", "Last Name", $dbtable);
+	$fStreet		= new FormTextField ("Street", "Street", $dbtable);
+	$fCity			= new FormTextField ("City", "City", $dbtable);
+	$fProvince		= new FormTextField ("Province", "Province", $dbtable);
+	$fPostalCode	= new FormTextField ("Postal_Code", "Postal Code", $dbtable);
+	$fCountry		= new FormTextField ("Country", "Country", $dbtable);
+	$fEmail			= new FormTextField ("Email", "Email", $dbtable);
+	$fPhone			= new FormTextField ("Phone", "Phone", $dbtable);
+	$fCompany		= new FormTextField ("CompanyName", "Company", $dbtable);
 	
 	//Create form	
 	$formObj = new FormHtml();
@@ -64,11 +64,11 @@ Variables
 	$group_2 = array( $fEmail, $fPhone, $fStreet, $fCity, $fProvince, $fPostalCode, $fCountry);
 	$groups = array('Information'=>$group_1, 'Contact Details'=>$group_2);	//Groups are array(Name=>array(fields))
 	
-	//get html code of form
+	//set groups of form
 	$formObj->setGroups($groups);
 	
 	//get html code of form
-	$formHtml = $formObj->htmlForm($fields);
+	$formHtml = $formObj->htmlForm($groups);
 
 /*////////////////////////////////////////////////////////////////////////////////
 Process Form
@@ -112,7 +112,7 @@ Edit Existing Record
 		//read form date 
 		$filter = '`'. $primaryKey  .'` = '. $edit_record;
 		$formObj->setDefaults($database, $dbtable, $filter);
-		$formHtml = $formObj->htmlForm($fields);
+		$formHtml = $formObj->htmlForm($groups);
 	}
 
 ?>
@@ -199,7 +199,7 @@ Edit Existing Record
 									</header>
 									<div id="menu">
 										<ul>
-										<li><a href="employee_customer_view.php" ><span class="button-menu"><i class="fa fa-arrow-circle-o-left fa-fw"></i>&nbsp; View Customer Database</span></a></li>
+										<li><a href="employee_customer_view.php" ><span class="button-menu"><i class="fa fa-arrow-circle-o-left fa-fw"></i>&nbsp; View Customers</span></a></li>
 										</ul>
 									</div>
 								</div>

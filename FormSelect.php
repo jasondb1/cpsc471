@@ -29,12 +29,13 @@ class FormSelect extends FormField{
 // Return:  none
 //
 
-    function __construct($colName, $displayName, $options, $default = ""){
+    function __construct($colName, $displayName, $options, $table, $default = ""){
         $this->columnName = $colName;
         $this->displayName = $displayName;
         $this->options = $options;
         $this->type = "select";
         $this->defaultValue = $default;
+        $this->table = $table;
     }
     
 ////////////////////////////////////////////////////////////////////////////
@@ -53,9 +54,16 @@ class FormSelect extends FormField{
         if ($this->isRequired) {$html .= "*";}
         $html .= $this->displayName. ':</label>';
         
-        $html .= '<select name="'. $this->columnName  .'">';
-        $html .= '<option></option>';
+        $html .= '<select name="'. $this->columnName; 
         
+        if ($this->isMultiItem == true){
+            $html .= "[]";
+        }
+        
+        
+        $html .= '">';
+        $html .= '<option></option>';
+
         foreach ($this->options as $display=>$value){
             $html .= '<option';
             $html .= ' value="'. $value .'" ';

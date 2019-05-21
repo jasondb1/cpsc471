@@ -9,12 +9,12 @@
  */
  
 //Used for testing, comment out for production
-ini_set('display_errors',1);
-error_reporting(E_ALL);
+//ini_set('display_errors',1);
+//error_reporting(E_ALL);
 
 class Database {
 
-    private $DEBUG = true;
+    private $DEBUG = false;
     private $dbhost;
     private $dbname;
     private $dbuser;
@@ -237,7 +237,7 @@ class Database {
 //
 
     public function query($sql){
-        if ($this->DEBUG) {echo "SQL: $sql";}
+        //if ($this->DEBUG) {echo "SQL: $sql";}
         
         $this->opendb();
         
@@ -319,12 +319,14 @@ class Database {
             $sql = "SELECT $valueColumn, $keyColumn FROM $table WHERE $filter";
         }
 		$retval = $this->query($sql);
-		
+		$list = array();
+        
 		while ($row = $retval->fetch_array(MYSQLI_ASSOC)) {
-        $list[$keyColumn]=$row[$valueColumn];
+            //$list[ $row[$keyColumn]] = $row[$valueColumn];
+            $list[ $row[$valueColumn]] = $row[$keyColumn];
 		}
         if ($sort){
-            sort ($list);
+            krsort ($list);
         }
         
 		return $list;

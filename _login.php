@@ -1,6 +1,6 @@
 <?php
-	ini_set('display_errors',1); 
-	error_reporting(E_ALL);	
+	//ini_set('display_errors',1); 
+	//error_reporting(E_ALL);	
 	require_once("phpauthent/phpauthent_core.php");
 	require_once("phpauthent/phpauthent_config.php");
 	include_once('_config.php')

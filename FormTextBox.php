@@ -29,11 +29,12 @@ class FormTextBox extends FormField{
 // Return:  none
 //
 
-    function __construct($colName, $displayName, $defaultValue = ""){
+    function __construct($colName, $displayName, $table, $defaultValue = ""){
         $this->columnName = $colName;
         $this->displayName = $displayName;
         $this->type = "textbox";
         $this->defaultValue = $defaultValue;
+        $this->table = $table;
     }
     
 ////////////////////////////////////////////////////////////////////////////

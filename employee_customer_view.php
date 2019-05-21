@@ -1,6 +1,6 @@
 <?php
-ini_set('display_errors',0); 
-error_reporting(0);
+//ini_set('display_errors',0); 
+//error_reporting(0);
 header("Cache-Control: private, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // A date in the past
@@ -20,7 +20,7 @@ Includes
 Page Protection
 ///////////////////////////////////////////////////////////////////////////////*/
 	$usersArray = array("administrator");
-	$groupsArray = array("admin","employee","payroll","supervisor");//***
+	$groupsArray = array("admin","supervisor","sales","accounting");//***
 	pageProtect($usersArray,$groupsArray);
 
 /*////////////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ Variables
 	//get and set initial variables
 		$database = new Database($dbhost, $dbname, $dbusername, $dbpass);
 		
-		$page_title="View Jobs";									//***
+		$page_title="View Customers";								//***
 		
 		$dbtable		= $db_table_customers;						//***
 		$primaryKey		= $database->getPrimaryKey($dbtable);

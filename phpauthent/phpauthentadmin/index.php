@@ -33,7 +33,7 @@
 <?php
 	$usersArray  = array();
 	$groupsArray = array("admin");
-	pageProtect($usersArray,$groupsArray);
+	//pageProtect($usersArray,$groupsArray);
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -80,7 +80,8 @@
 <?php
 $mysql_link = new MySQLi($db_hostname, $db_username, $db_password, $db_database);
 	if ($mysql_link->connect_errno) {die($mysql_link->connect_error);}
-		$query = "SELECT * FROM ".$db_tbl_users." ORDER BY ".$db_fld_users_username;
+		//$query = "SELECT * FROM ".$db_tbl_users." ORDER BY ".$db_fld_users_username;
+		$query = "SELECT ". $db_tbl_users .".*, employee_info.status, employee_info.work_phone FROM ".$db_tbl_users." JOIN employee_info ON employee_info.uid = ". $db_tbl_users .".id ORDER BY ".$db_fld_users_username;
 		$r_query = $mysql_link->query($query);
 ?>
 
@@ -109,8 +110,8 @@ $mysql_link = new MySQLi($db_hostname, $db_username, $db_password, $db_database)
     <td><a href="useredit.php?action=edit&id=<?php echo $row[$db_fld_users_id];?>"><?php echo $txt_overview_action_edit;?></a> - <a href="useredit.php?action=delete&id=<?php echo $row[$db_fld_users_id];?>" onClick="javascript:return confirm('<?php echo $confirm_deluser_before.$row[$db_fld_users_username].$confirm_deluser_after;?>');"><?php echo $txt_overview_action_delete;?></a> </td>
     <td><?php echo $row[$db_fld_users_realname];?></td>
 	<td><?php echo $row[$db_fld_users_email];?></td>
-	<td>temp removed<?php //echo $row[$db_fld_users_phone];?></td>
-	<td>temp removed<?php //echo $row[$db_fld_users_active];?></td>
+	<td><?php echo $row['work_phone'];?></td>
+	<td><?php echo $row['status'];?></td>
   </tr>
 <?php
 		}

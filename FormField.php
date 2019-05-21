@@ -16,10 +16,12 @@ class FormField{
     public $displayName;
     protected $type;
     protected $groupName;
+    protected $table;
     
     protected $readOnly= false;
     protected $isRequired = false;
     protected $defaultValue;
+    protected $isMultiItem = false;
     
     //abstract public function toHtml();
 
@@ -52,6 +54,21 @@ class FormField{
     public function setReadOnly(){
         $this->readOnly = true;
     }
+    
+////////////////////////////////////////////////////////////////////////////
+//
+// setIsItem
+//
+// Sets field to readonly when displaying
+//
+// Param:   none
+//
+// Return:  none
+//
+
+    public function setIsMultiItem(){
+        $this->isMultiItem = true;
+    }
 
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -81,6 +98,21 @@ class FormField{
 
     public function getDefaultValue(){
         return $this->defaultValue;
+    }
+    
+////////////////////////////////////////////////////////////////////////////
+//
+// getTable
+//
+// Sets the default value for the field
+//
+// Param:   none
+//
+// Return:  the default value to set
+//
+
+    public function getTable(){
+        return $this->table;
     }
     
 ////////////////////////////////////////////////////////////////////////////

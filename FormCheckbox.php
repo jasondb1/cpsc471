@@ -26,11 +26,12 @@ class FormCheckbox extends FormField{
 // Return:  none
 //
 
-    function __construct($colName, $displayName, $defaultValue = "1"){
+    function __construct($colName, $displayName, $table, $defaultValue = "1"){
         $this->columnName = $colName;
         $this->displayName = $displayName;
         $this->type = "checkbox";
         $this->defaultValue = $defaultValue;
+        $this->table = $table;
     }
     
 ////////////////////////////////////////////////////////////////////////////
